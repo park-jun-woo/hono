@@ -1,3 +1,5 @@
+//ff:type feature=adapter type=adapter
+//ff:what Serve static
 import { serveStatic as baseServeStatic } from '../../middleware/serve-static'
 import type { ServeStaticOptions as BaseServeStaticOptions } from '../../middleware/serve-static'
 import type { Env, MiddlewareHandler } from '../../types'

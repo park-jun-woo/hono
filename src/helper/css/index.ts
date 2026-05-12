@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Index
 /**
  * @module
  * css Helper for Hono.
@@ -25,40 +27,24 @@ import {
   keyframesCommon,
   viewTransitionCommon,
 } from './common'
+import type { CssClassName } from './css_class_name_def.js'
+import type { usedClassNameData } from './used_class_name_data.js'
+import type { CssType } from './css_type.js'
+import type { CxType } from './cx_type.js'
+import type { KeyframesType } from './keyframes_type.js'
+import type { ViewTransitionType } from './view_transition_type_def.js'
+import type { StyleType } from './style_type.js'
+
+export type { CssClassName } from './css_class_name_def.js'
+export type { usedClassNameData } from './used_class_name_data.js'
+export type { CssType } from './css_type.js'
+export type { CxType } from './cx_type.js'
+export type { KeyframesType } from './keyframes_type.js'
+export type { ViewTransitionType } from './view_transition_type_def.js'
+export type { StyleType } from './style_type.js'
+
 export { rawCssString } from './common'
 export type { ClassNameSlug, OnInvalidSlug } from './common'
-
-type CssClassName = HtmlEscapedString & CssClassNameCommon
-
-type usedClassNameData = [
-  Record<string, string>, // class name to add
-  Record<string, true>, // class name already added
-]
-
-interface CssType {
-  (strings: TemplateStringsArray, ...values: CssVariableType[]): Promise<string>
-}
-
-interface CxType {
-  (
-    ...args: (CssClassName | Promise<string> | string | boolean | null | undefined)[]
-  ): Promise<string>
-}
-
-interface KeyframesType {
-  (strings: TemplateStringsArray, ...values: CssVariableType[]): CssClassNameCommon
-}
-
-interface ViewTransitionType {
-  (strings: TemplateStringsArray, ...values: CssVariableType[]): Promise<string>
-  (content: Promise<string>): Promise<string>
-  (): Promise<string>
-}
-
-interface StyleType {
-  (args?: { children?: Promise<string>; nonce?: string }): HtmlEscapedString
-}
-
 /**
  * @experimental
  * `createCssContext` is an experimental feature.

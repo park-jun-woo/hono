@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Tiny
 /**
  * @module
  * The preset that uses `PatternRouter`.

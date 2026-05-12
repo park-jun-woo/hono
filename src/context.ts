@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Context
 import { HonoRequest } from './request'
 import type { Result } from './router'
 import type {
@@ -14,268 +16,93 @@ import { HtmlEscapedCallbackPhase, resolveCallback } from './utils/html'
 import type { ContentfulStatusCode, RedirectStatusCode, StatusCode } from './utils/http-status'
 import type { BaseMime } from './utils/mime'
 import type { InvalidJSONValue, IsAny, JSONParsed, JSONValue } from './utils/types'
+import type { HeaderRecord } from './header_record.js'
+import type { ResponseInit } from './response_init.js'
+import type { Data } from './data.js'
+import type { Renderer } from './renderer.js'
+import type { PropsForRenderer } from './props_for_renderer.js'
+import type { Layout } from './layout.js'
+import type { JSONRespondReturn } from './json_respond_return.js'
+import type { ContextOptions } from './context_options.js'
+import type { ResponseOrInit } from './response_or_init.js'
+import type { ExecutionContext } from './execution_context.js'
+import type { ContextVariableMap } from './context_variable_map.js'
+import type { Get } from './get.js'
+import type { Set } from './set.js'
+import type { NewResponse } from './new_response.js'
+import type { BodyRespond } from './body_respond.js'
+import type { TextRespond } from './text_respond.js'
+import type { JSONRespond } from './json_respond.js'
+import type { HTMLRespond } from './html_respond.js'
+import type { SetHeaders } from './set_headers.js'
 
-type HeaderRecord =
-  | Record<'Content-Type', BaseMime>
-  | Record<ResponseHeader, string | string[]>
-  | Record<string, string | string[]>
+export type { HeaderRecord } from './header_record.js'
+export type { Data } from './data.js'
+export type { Renderer } from './renderer.js'
+export type { PropsForRenderer } from './props_for_renderer.js'
+export type { Layout } from './layout.js'
+export type { JSONRespondReturn } from './json_respond_return.js'
+export type { ContextOptions } from './context_options.js'
+export type { ResponseHeadersInit } from './response_headers_init.js'
+export type { ResponseOrInit } from './response_or_init.js'
+export type { ExecutionContext } from './execution_context.js'
+export type { ContextVariableMap } from './context_variable_map.js'
+export type { ContextRenderer } from './context_renderer.js'
+export type { DefaultRenderer } from './default_renderer.js'
+export type { Get } from './get.js'
+export type { Set } from './set.js'
+export type { NewResponse } from './new_response.js'
+export type { BodyRespond } from './body_respond.js'
+export type { TextRespond } from './text_respond.js'
+export type { JSONRespond } from './json_respond.js'
+export type { HTMLRespond } from './html_respond.js'
+export type { SetHeadersOptions } from './set_headers_options.js'
+export type { SetHeaders } from './set_headers.js'
+export type { ResponseInit } from './response_init.js'
 
-/**
- * Data type can be a string, ArrayBuffer, Uint8Array (buffer), or ReadableStream.
- */
-export type Data = string | ArrayBuffer | ReadableStream | Uint8Array<ArrayBuffer>
-
-/**
- * Interface for the execution context in a web worker or similar environment.
- */
-export interface ExecutionContext {
-  /**
-   * Extends the lifetime of the event callback until the promise is settled.
-   *
-   * @param promise - A promise to wait for.
-   */
-  waitUntil(promise: Promise<unknown>): void
-  /**
-   * Allows the event to be passed through to subsequent event listeners.
-   */
-  passThroughOnException(): void
-  /**
-   * For compatibility with Wrangler 4.x.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  props: any
-  /**
-   * For compatibility with Wrangler 4.x.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  exports?: any
+const copyCookies = (source: Headers, target: Headers): void => {
+  const cookies = source.getSetCookie()
+  target.delete('set-cookie')
+  for (const cookie of cookies) {
+    target.append('set-cookie', cookie)
+  }
 }
 
-/**
- * Interface for context variable mapping.
- */
-export interface ContextVariableMap {}
-
-/**
- * Interface for context renderer.
- */
-export interface ContextRenderer {}
-
-/**
- * Interface representing a renderer for content.
- *
- * @interface DefaultRenderer
- * @param {string | Promise<string>} content - The content to be rendered, which can be either a string or a Promise resolving to a string.
- * @returns {Response | Promise<Response>} - The response after rendering the content, which can be either a Response or a Promise resolving to a Response.
- */
-interface DefaultRenderer {
-  (content: string | Promise<string>): Response | Promise<Response>
+const mergeArgHeaders = (source: Headers, target: Headers): void => {
+  for (const [key, value] of source) {
+    if (key.toLowerCase() === 'set-cookie') {
+      target.append(key, value)
+    } else {
+      target.set(key, value)
+    }
+  }
 }
 
-/**
- * Renderer type which can either be a ContextRenderer or DefaultRenderer.
- */
-export type Renderer = ContextRenderer extends Function ? ContextRenderer : DefaultRenderer
+const applySetHeaders = (headers: Record<string, string | string[]>, target: Headers): void => {
+  for (const [k, v] of Object.entries(headers)) {
+    if (typeof v === 'string') {
+      target.set(k, v)
+    } else {
+      target.delete(k)
+      for (const v2 of v) {
+        target.append(k, v2)
+      }
+    }
+  }
+}
 
-/**
- * Extracts the props for the renderer.
- */
-export type PropsForRenderer = [...Required<Parameters<Renderer>>] extends [unknown, infer Props]
-  ? Props
-  : unknown
+const mergeHeaders = (source: Headers, target: Headers): void => {
+  for (const [k, v] of source.entries()) {
+    if (k === 'content-type') continue
+    if (k === 'set-cookie') {
+      copyCookies(source, target)
+    } else {
+      target.set(k, v)
+    }
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Layout<T = Record<string, any>> = (props: T) => any
-
-/**
- * Interface for getting context variables.
- *
- * @template E - Environment type.
- */
-interface Get<E extends Env> {
-  <Key extends keyof E['Variables']>(key: Key): E['Variables'][Key]
-  <Key extends keyof ContextVariableMap>(key: Key): ContextVariableMap[Key]
-}
-
-/**
- * Interface for setting context variables.
- *
- * @template E - Environment type.
- */
-interface Set<E extends Env> {
-  <Key extends keyof E['Variables']>(key: Key, value: E['Variables'][Key]): void
-  <Key extends keyof ContextVariableMap>(key: Key, value: ContextVariableMap[Key]): void
-}
-
-/**
- * Interface for creating a new response.
- */
-interface NewResponse {
-  (data: Data | null, status?: StatusCode, headers?: HeaderRecord): Response
-  (data: Data | null, init?: ResponseOrInit): Response
-}
-
-/**
- * Interface for responding with a body.
- */
-interface BodyRespond {
-  // if we return content, only allow the status codes that allow for returning the body
-  <T extends Data, U extends ContentfulStatusCode>(
-    data: T,
-    status?: U,
-    headers?: HeaderRecord
-  ): Response & TypedResponse<T, U, 'body'>
-  <T extends Data, U extends ContentfulStatusCode>(
-    data: T,
-    init?: ResponseOrInit<U>
-  ): Response & TypedResponse<T, U, 'body'>
-  <T extends null, U extends StatusCode>(
-    data: T,
-    status?: U,
-    headers?: HeaderRecord
-  ): Response & TypedResponse<null, U, 'body'>
-  <T extends null, U extends StatusCode>(
-    data: T,
-    init?: ResponseOrInit<U>
-  ): Response & TypedResponse<null, U, 'body'>
-}
-
-/**
- * Interface for responding with text.
- *
- * @interface TextRespond
- * @template T - The type of the text content.
- * @template U - The type of the status code.
- *
- * @param {T} text - The text content to be included in the response.
- * @param {U} [status] - An optional status code for the response.
- * @param {HeaderRecord} [headers] - An optional record of headers to include in the response.
- *
- * @returns {Response & TypedResponse<T, U, 'text'>} - The response after rendering the text content, typed with the provided text and status code types.
- */
-interface TextRespond {
-  <T extends string, U extends ContentfulStatusCode = ContentfulStatusCode>(
-    text: T,
-    status?: U,
-    headers?: HeaderRecord
-  ): Response & TypedResponse<T, U, 'text'>
-  <T extends string, U extends ContentfulStatusCode = ContentfulStatusCode>(
-    text: T,
-    init?: ResponseOrInit<U>
-  ): Response & TypedResponse<T, U, 'text'>
-}
-
-/**
- * Interface for responding with JSON.
- *
- * @interface JSONRespond
- * @template T - The type of the JSON value or simplified unknown type.
- * @template U - The type of the status code.
- *
- * @param {T} object - The JSON object to be included in the response.
- * @param {U} [status] - An optional status code for the response.
- * @param {HeaderRecord} [headers] - An optional record of headers to include in the response.
- *
- * @returns {JSONRespondReturn<T, U>} - The response after rendering the JSON object, typed with the provided object and status code types.
- */
-interface JSONRespond {
-  <
-    T extends JSONValue | {} | InvalidJSONValue,
-    U extends ContentfulStatusCode = ContentfulStatusCode,
-  >(
-    object: T,
-    status?: U,
-    headers?: HeaderRecord
-  ): JSONRespondReturn<T, U>
-  <
-    T extends JSONValue | {} | InvalidJSONValue,
-    U extends ContentfulStatusCode = ContentfulStatusCode,
-  >(
-    object: T,
-    init?: ResponseOrInit<U>
-  ): JSONRespondReturn<T, U>
-}
-
-/**
- * @template T - The type of the JSON value or simplified unknown type.
- * @template U - The type of the status code.
- *
- * @returns {Response & TypedResponse<JSONParsed<T>, U, 'json'>} - The response after rendering the JSON object, typed with the provided object and status code types.
- */
-type JSONRespondReturn<
-  T extends JSONValue | {} | InvalidJSONValue,
-  U extends ContentfulStatusCode,
-> = Response & TypedResponse<JSONParsed<T>, U, 'json'>
-
-/**
- * Interface representing a function that responds with HTML content.
- *
- * @param html - The HTML content to respond with, which can be a string or a Promise that resolves to a string.
- * @param status - (Optional) The HTTP status code for the response.
- * @param headers - (Optional) A record of headers to include in the response.
- * @param init - (Optional) The response initialization object.
- *
- * @returns A Response object or a Promise that resolves to a Response object.
- */
-interface HTMLRespond {
-  <T extends string | Promise<string>>(
-    html: T,
-    status?: ContentfulStatusCode,
-    headers?: HeaderRecord
-  ): T extends string ? Response : Promise<Response>
-  <T extends string | Promise<string>>(
-    html: T,
-    init?: ResponseOrInit<ContentfulStatusCode>
-  ): T extends string ? Response : Promise<Response>
-}
-
-/**
- * Options for configuring the context.
- *
- * @template E - Environment type.
- */
-type ContextOptions<E extends Env> = {
-  /**
-   * Bindings for the environment.
-   */
-  env: E['Bindings']
-  /**
-   * Execution context for the request.
-   */
-  executionCtx?: FetchEventLike | ExecutionContext | undefined
-  /**
-   * Handler for not found responses.
-   */
-  notFoundHandler?: NotFoundHandler<E>
-  matchResult?: Result<[H, RouterRoute]>
-  path?: string
-}
-
-interface SetHeadersOptions {
-  append?: boolean
-}
-
-interface SetHeaders {
-  (name: 'Content-Type', value?: BaseMime, options?: SetHeadersOptions): void
-  (name: ResponseHeader, value?: string, options?: SetHeadersOptions): void
-  (name: string, value?: string, options?: SetHeadersOptions): void
-}
-
-type ResponseHeadersInit =
-  | [string, string][]
-  | Record<'Content-Type', BaseMime>
-  | Record<ResponseHeader, string>
-  | Record<string, string>
-  | Headers
-
-interface ResponseInit<T extends StatusCode = StatusCode> {
-  headers?: ResponseHeadersInit
-  status?: T
-  statusText?: string
-}
-
-type ResponseOrInit<T extends StatusCode = StatusCode> = ResponseInit<T> | Response
-
 export const TEXT_PLAIN = 'text/plain; charset=UTF-8'
 
 const setDefaultContentType = (contentType: string, headers?: HeaderRecord): HeaderRecord => {
@@ -414,20 +241,7 @@ export class Context<
   set res(_res: Response | undefined) {
     if (this.#res && _res) {
       _res = createResponseInstance(_res.body, _res)
-      for (const [k, v] of this.#res.headers.entries()) {
-        if (k === 'content-type') {
-          continue
-        }
-        if (k === 'set-cookie') {
-          const cookies = this.#res.headers.getSetCookie()
-          _res.headers.delete('set-cookie')
-          for (const cookie of cookies) {
-            _res.headers.append('set-cookie', cookie)
-          }
-        } else {
-          _res.headers.set(k, v)
-        }
-      }
+      mergeHeaders(this.#res.headers, _res.headers)
     }
     this.#res = _res
     this.finalized = true
@@ -612,26 +426,11 @@ export class Context<
 
     if (typeof arg === 'object' && 'headers' in arg) {
       const argHeaders = arg.headers instanceof Headers ? arg.headers : new Headers(arg.headers)
-      for (const [key, value] of argHeaders) {
-        if (key.toLowerCase() === 'set-cookie') {
-          responseHeaders.append(key, value)
-        } else {
-          responseHeaders.set(key, value)
-        }
-      }
+      mergeArgHeaders(argHeaders, responseHeaders)
     }
 
     if (headers) {
-      for (const [k, v] of Object.entries(headers)) {
-        if (typeof v === 'string') {
-          responseHeaders.set(k, v)
-        } else {
-          responseHeaders.delete(k)
-          for (const v2 of v) {
-            responseHeaders.append(k, v2)
-          }
-        }
-      }
+      applySetHeaders(headers, responseHeaders)
     }
 
     const status = typeof arg === 'number' ? arg : (arg?.status ?? this.#status)

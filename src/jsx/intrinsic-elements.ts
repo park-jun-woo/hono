@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Intrinsic elements
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import type { BaseMime } from '../utils/mime'

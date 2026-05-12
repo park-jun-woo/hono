@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * IP Restriction Middleware for Hono
  * @module
@@ -14,26 +16,13 @@ import {
   distinctRemoteAddr,
   isIPv4MappedIPv6,
 } from '../../utils/ipaddr'
+import type { IPRestrictionRuleFunction } from './ip_restriction_rule_function.js'
+import type { IPRestrictionRule } from './ip_restriction_rule.js'
+import type { GetIPAddr } from './get_ip_addr.js'
 
-/**
- * Function to get IP Address
- */
-type GetIPAddr = GetConnInfo | ((c: Context) => string)
-
-/**
- * ### IPv4 and IPv6
- * - `*` match all
- *
- * ### IPv4
- * - `192.168.2.0` static
- * - `192.168.2.0/24` CIDR Notation
- *
- * ### IPv6
- * - `::1` static
- * - `::1/10` CIDR Notation
- */
-type IPRestrictionRuleFunction = (addr: { addr: string; type: AddressType }) => boolean
-export type IPRestrictionRule = string | ((addr: { addr: string; type: AddressType }) => boolean)
+export type { GetIPAddr } from './get_ip_addr.js'
+export type { IPRestrictionRuleFunction } from './ip_restriction_rule_function.js'
+export type { IPRestrictionRule } from './ip_restriction_rule.js'
 
 const IS_CIDR_NOTATION_REGEX = /\/[0-9]{0,3}$/
 const buildMatcher = (

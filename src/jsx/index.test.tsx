@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Index test
 /** @jsxImportSource ./ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html } from '../helper/html'

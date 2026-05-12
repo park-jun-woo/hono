@@ -1,6 +1,15 @@
+//ff:type feature=helper type=handler
+//ff:what Middleware
 import type { Context } from '../../context'
 import type { Env, MiddlewareHandler } from '../../types'
 import { isDynamicRoute } from './utils'
+import type { SSGParams } from './ssg_params.js'
+import type { AddedSSGDataRequest } from './added_ssg_data_request.js'
+
+export type { SSGParams } from './ssg_params.js'
+export type { AddedSSGDataRequest } from './added_ssg_data_request.js'
+export type { SSGParam } from './ssg_param.js'
+
 
 export const SSG_CONTEXT = 'HONO_SSG_CONTEXT'
 export const X_HONO_DISABLE_SSG_HEADER_KEY = 'x-hono-disable-ssg'
@@ -21,20 +30,11 @@ export const SSG_DISABLED_RESPONSE = (() => {
   }
 })() as Response
 
-interface SSGParam {
-  [key: string]: string
-}
-export type SSGParams = SSGParam[]
-
 interface SSGParamsMiddleware {
   <E extends Env = Env>(
     generateParams: (c: Context<E>) => SSGParams | Promise<SSGParams>
   ): MiddlewareHandler<E>
   <E extends Env = Env>(params: SSGParams): MiddlewareHandler<E>
-}
-
-export type AddedSSGDataRequest = Request & {
-  ssgParams?: SSGParams
 }
 
 /**

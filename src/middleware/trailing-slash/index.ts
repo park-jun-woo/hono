@@ -1,20 +1,14 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * Trailing Slash Middleware for Hono.
  */
 
 import type { MiddlewareHandler } from '../../types'
+import type { TrimTrailingSlashOptions } from './trim_trailing_slash_options.js'
 
-type TrimTrailingSlashOptions = {
-  /**
-   * If `true`, the middleware will always redirect requests with a trailing slash
-   * before executing handlers.
-   * This is useful for routes with wildcards (`*`).
-   * If `false` (default), it will only redirect when the route is not found (404).
-   * @default false
-   */
-  alwaysRedirect?: boolean
-}
+export type { TrimTrailingSlashOptions } from './trim_trailing_slash_options.js'
 
 /**
  * Trailing Slash Middleware for Hono.

@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Server
 /**
  * @module
  * This module provides APIs for `hono/jsx/server`, which is compatible with `react-dom/server`.
@@ -7,10 +9,9 @@ import type { HtmlEscapedString } from '../../utils/html'
 import type { Child } from '../base'
 import { renderToReadableStream as renderToReadableStreamHono } from '../streaming'
 import version from './'
+import type { RenderToStringOptions } from './render_to_string_options.js'
 
-export interface RenderToStringOptions {
-  identifierPrefix?: string
-}
+export type { RenderToStringOptions } from './render_to_string_options.js'
 
 /**
  * Render JSX element to string.

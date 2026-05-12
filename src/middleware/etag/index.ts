@@ -1,3 +1,6 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:type feature=middleware type=model
+//ff:what Index
 /**
  * @module
  * ETag Middleware for Hono.
@@ -35,9 +38,7 @@ function etagMatches(etag: string, ifNoneMatch: string | null) {
   )
 }
 
-function initializeGenerator(
-  generator?: ETagOptions['generateDigest']
-): ETagOptions['generateDigest'] | undefined {
+const initializeGenerator = (generator?: ETagOptions['generateDigest']): ETagOptions['generateDigest'] | undefined => {
   if (!generator) {
     if (crypto && crypto.subtle) {
       generator = (body: Uint8Array<ArrayBuffer>) =>

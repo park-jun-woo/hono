@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Client
 /**
  * @module
  * This module provides APIs for `hono/jsx/dom/client`, which is compatible with `react-dom/client`.
@@ -7,12 +9,15 @@ import type { Child } from '../base'
 import { useState } from '../hooks'
 import { buildNode, renderNode } from './render'
 import type { NodeObject } from './render'
+import type { RootOptions } from './root_options.js'
+
+export type { RootOptions } from './root_options.js'
+
 
 export interface Root {
   render(children: Child): void
   unmount(): void
 }
-export type RootOptions = Record<string, unknown>
 
 /**
  * Create a root object for rendering

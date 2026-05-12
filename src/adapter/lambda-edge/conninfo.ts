@@ -1,3 +1,5 @@
+//ff:type feature=adapter type=adapter
+//ff:what Conninfo
 import type { Context } from '../../context'
 import type { GetConnInfo } from '../../helper/conninfo'
 import type { CloudFrontEdgeEvent } from './handler'

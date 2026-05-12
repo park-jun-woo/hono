@@ -1,3 +1,5 @@
+//ff:type feature=utils type=model
+//ff:what Basic auth
 import { decodeBase64 } from './encode'
 
 const CREDENTIALS_REGEXP = /^ *(?:[Bb][Aa][Ss][Ii][Cc]) +([A-Za-z0-9._~+/-]+=*) *$/

@@ -1,3 +1,5 @@
+//ff:type feature=utils type=model
+//ff:what Accept
 export interface Accept {
   type: string
   params: Record<string, string>

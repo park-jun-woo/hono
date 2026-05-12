@@ -1,3 +1,21 @@
+//ff:type feature=helper type=model
+//ff:what Common
+
+import type { CssVariableType } from './css_variable_type.js'
+import type { CssClassName } from './css_class_name.js'
+import type { ClassNameSlug } from './class_name_slug.js'
+import type { OnInvalidSlug } from './on_invalid_slug.js'
+import type { ViewTransitionType } from './view_transition_type.js'
+
+export type { CssVariableBasicType } from './css_variable_basic_type.js'
+export type { CssVariableAsyncType } from './css_variable_async_type.js'
+export type { CssVariableArrayType } from './css_variable_array_type.js'
+export type { CssVariableType } from './css_variable_type.js'
+export type { ClassNameSlug } from './class_name_slug.js'
+export type { OnInvalidSlug } from './on_invalid_slug.js'
+export type { ViewTransitionType } from './view_transition_type.js'
+export type { CssClassName } from './css_class_name.js'
+
 // provide utility functions for css helper both on server and client
 export const PSEUDO_GLOBAL_SELECTOR = ':-hono-global'
 export const isPseudoGlobalSelectorRe = new RegExp(`^${PSEUDO_GLOBAL_SELECTOR}{(.*)}$`)
@@ -9,18 +27,9 @@ export const STYLE_STRING: unique symbol = Symbol()
 export const SELECTORS: unique symbol = Symbol()
 export const EXTERNAL_CLASS_NAMES: unique symbol = Symbol()
 const CSS_ESCAPED: unique symbol = Symbol()
-
-export interface CssClassName {
-  [SELECTOR]: string
-  [CLASS_NAME]: string
-  [STYLE_STRING]: string
-  [SELECTORS]: CssClassName[]
-  [EXTERNAL_CLASS_NAMES]: string[]
-}
-
 export const IS_CSS_ESCAPED = Symbol()
 
-interface CssEscapedString {
+export interface CssEscapedString {
   [CSS_ESCAPED]: string
 }
 
@@ -100,38 +109,6 @@ const minifyCssRe: RegExp = new RegExp(
 export const minify = (css: string): string => {
   return css.replace(minifyCssRe, (_, $1, $2, $3, $4) => $1 || $2 || $3 || $4 || '')
 }
-
-type CssVariableBasicType =
-  | CssClassName
-  | CssEscapedString
-  | string
-  | number
-  | boolean
-  | null
-  | undefined
-type CssVariableAsyncType = Promise<CssVariableBasicType>
-type CssVariableArrayType = (CssVariableBasicType | CssVariableAsyncType)[]
-export type CssVariableType = CssVariableBasicType | CssVariableAsyncType | CssVariableArrayType
-
-/**
- * A function that customizes generated CSS class names.
- *
- * @param hash - The default hash-based class name (e.g. `css-1234567890`)
- * @param label - The comment label extracted from the CSS template, may be empty.
- *   Whitespace is trimmed and inner spaces are replaced with hyphens.
- * @param styleString - The minified CSS style string
- * @returns The custom class name to use. Must be a safe CSS identifier;
- *   otherwise, the default hash is used as a fallback.
- */
-export type ClassNameSlug = (hash: string, label: string, styleString: string) => string
-
-/**
- * A callback function called when an invalid slug is returned from ClassNameSlug.
- *
- * @param slug - The invalid slug
- */
-export type OnInvalidSlug = (slug: string) => void
-
 export const buildStyleString = (
   strings: TemplateStringsArray,
   values: CssVariableType[]
@@ -281,18 +258,6 @@ export const keyframesCommon = (
     [EXTERNAL_CLASS_NAMES]: [],
   }
 }
-
-type ViewTransitionType = {
-  (
-    strings: TemplateStringsArray,
-    values: CssVariableType[],
-    classNameSlug?: ClassNameSlug,
-    onInvalidSlug?: OnInvalidSlug
-  ): CssClassName
-  (content: CssClassName): CssClassName
-  (): CssClassName
-}
-
 let viewTransitionNameIndex = 0
 export const viewTransitionCommon: ViewTransitionType = ((
   strings: TemplateStringsArray | CssClassName | undefined,

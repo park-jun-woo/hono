@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Css
 /**
  * @module
  * This module provides APIs that enable `hono/jsx/dom` to support.
@@ -22,6 +24,18 @@ import {
   keyframesCommon,
   viewTransitionCommon,
 } from '../../helper/css/common'
+import type { CreateCssJsxDomObjectsType } from './create_css_jsx_dom_objects_type.js'
+import type { CssType } from './css_type.js'
+import type { CxType } from './cx_type.js'
+import type { KeyframesType } from './keyframes_type.js'
+import type { ViewTransitionType } from './view_transition_type.js'
+
+export type { CreateCssJsxDomObjectsType } from './create_css_jsx_dom_objects_type.js'
+export type { CssType } from './css_type.js'
+export type { CxType } from './cx_type.js'
+export type { KeyframesType } from './keyframes_type.js'
+export type { ViewTransitionType } from './view_transition_type.js'
+
 export { rawCssString } from '../../helper/css/common'
 
 const splitRule = (rule: string): string[] => {
@@ -64,16 +78,6 @@ const splitRule = (rule: string): string[] => {
   }
   return result
 }
-
-interface CreateCssJsxDomObjectsType {
-  (args: { id: Readonly<string> }): readonly [
-    {
-      toString(this: CssClassName): string
-    },
-    FC<PropsWithChildren<void>>,
-  ]
-}
-
 export const createCssJsxDomObjects: CreateCssJsxDomObjectsType = ({ id }) => {
   let styleSheet: CSSStyleSheet | null | undefined = undefined
   const findStyleSheet = (): [CSSStyleSheet, Set<string>] | [] => {
@@ -140,24 +144,6 @@ export const createCssJsxDomObjects: CreateCssJsxDomObjectsType = ({ id }) => {
     }) as any
 
   return [cssObject, Style] as const
-}
-
-interface CssType {
-  (strings: TemplateStringsArray, ...values: CssVariableType[]): string
-}
-
-interface CxType {
-  (...args: (string | boolean | null | undefined)[]): string
-}
-
-interface KeyframesType {
-  (strings: TemplateStringsArray, ...values: CssVariableType[]): CssClassName
-}
-
-interface ViewTransitionType {
-  (strings: TemplateStringsArray, ...values: CssVariableType[]): string
-  (content: string): string
-  (): string
 }
 
 interface DefaultContextType {

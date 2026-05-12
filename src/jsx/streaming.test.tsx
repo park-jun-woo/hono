@@ -1,3 +1,5 @@
+//ff:func feature=jsx type=util control=sequence
+//ff:what Streaming test
 /** @jsxImportSource ./ */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { JSDOM } from 'jsdom'

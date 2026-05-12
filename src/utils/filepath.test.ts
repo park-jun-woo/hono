@@ -1,3 +1,5 @@
+//ff:func feature=utils type=util control=sequence
+//ff:what Filepath test
 import { getFilePath, getFilePathWithoutDefaultDocument } from './filepath'
 
 describe('getFilePathWithoutDefaultDocument', () => {

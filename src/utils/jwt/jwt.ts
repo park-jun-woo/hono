@@ -1,3 +1,6 @@
+//ff:func feature=utils type=model control=sequence
+//ff:type feature=utils type=model
+//ff:what Jwt
 /**
  * @module
  * JSON Web Token (JWT)
@@ -27,6 +30,12 @@ import {
 } from './types'
 import type { JWTPayload } from './types'
 import { utf8Decoder, utf8Encoder } from './utf8'
+import type { VerifyOptionsWithAlg } from './verify_options_with_alg.js'
+import type { VerifyOptions } from './verify_options.js'
+
+export type { VerifyOptions } from './verify_options.js'
+export type { VerifyOptionsWithAlg } from './verify_options_with_alg.js'
+
 
 const encodeJwtPart = (part: unknown): string =>
   encodeBase64Url(utf8Encoder.encode(JSON.stringify(part)).buffer).replace(/=/g, '')
@@ -74,25 +83,6 @@ export const sign = async (
 
   return `${partialToken}.${signature}`
 }
-
-export type VerifyOptions = {
-  /** The expected issuer used for verifying the token */
-  iss?: string | RegExp
-  /** Verify the `nbf` claim (default: `true`) */
-  nbf?: boolean
-  /** Verify the `exp` claim (default: `true`) */
-  exp?: boolean
-  /** Verify the `iat` claim (default: `true`) */
-  iat?: boolean
-  /** Acceptable audience(s) for the token */
-  aud?: string | string[] | RegExp
-}
-
-export type VerifyOptionsWithAlg = {
-  /** The algorithm used for decoding the token */
-  alg: SignatureAlgorithm
-} & VerifyOptions
-
 export const verify = async (
   token: string,
   publicKey: SignatureKey,

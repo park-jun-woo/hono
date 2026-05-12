@@ -1,10 +1,14 @@
+//ff:type feature=router type=router
+//ff:what Prepared router
 import type { ParamIndexMap, Result, Router } from '../../router'
 import { METHOD_NAME_ALL } from '../../router'
 import type { HandlerData, Matcher, MatcherMap, StaticMap } from './matcher'
 import { match, emptyParam } from './matcher'
 import { RegExpRouter } from './router'
+import type { RelocateMap } from './relocate_map.js'
 
-type RelocateMap = Record<string, ([(number | string)[], ParamIndexMap] | [(number | string)[]])[]>
+export type { RelocateMap } from './relocate_map.js'
+
 
 export class PreparedRegExpRouter<T> implements Router<T> {
   name: string = 'PreparedRegExpRouter'
@@ -14,6 +18,16 @@ export class PreparedRegExpRouter<T> implements Router<T> {
   constructor(matchers: MatcherMap<T>, relocateMap: RelocateMap) {
     this.#matchers = matchers
     this.#relocateMap = relocateMap
+  }
+
+  #forMethods(method: string, fn: (m: string) => void) {
+    if (method === METHOD_NAME_ALL) {
+      for (const m in this.#matchers) {
+        fn(m)
+      }
+    } else {
+      fn(method)
+    }
   }
 
   #addWildcard(method: string, handlerData: [T, ParamIndexMap]) {
@@ -60,13 +74,7 @@ export class PreparedRegExpRouter<T> implements Router<T> {
 
     if (path === '/*' || path === '*') {
       const handlerData: [T, ParamIndexMap] = [handler, {}]
-      if (method === METHOD_NAME_ALL) {
-        for (const m in this.#matchers) {
-          this.#addWildcard(m, handlerData)
-        }
-      } else {
-        this.#addWildcard(method, handlerData)
-      }
+      this.#forMethods(method, (m) => this.#addWildcard(m, handlerData))
       return
     }
 
@@ -75,13 +83,7 @@ export class PreparedRegExpRouter<T> implements Router<T> {
       throw new Error(`Path ${path} is not registered`)
     }
     for (const [indexes, map] of data) {
-      if (method === METHOD_NAME_ALL) {
-        for (const m in this.#matchers) {
-          this.#addPath(m, path, handler, indexes, map)
-        }
-      } else {
-        this.#addPath(method, path, handler, indexes, map)
-      }
+      this.#forMethods(method, (m) => this.#addPath(m, path, handler, indexes, map))
     }
   }
 

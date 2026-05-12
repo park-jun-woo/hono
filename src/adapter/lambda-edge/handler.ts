@@ -1,91 +1,35 @@
+//ff:type feature=adapter type=adapter
+//ff:what Handler
 import crypto from 'node:crypto'
 import type { Hono } from '../../hono'
 
 import { decodeBase64, encodeBase64 } from '../../utils/encode'
+import type { CloudFrontHeaders } from './cloud_front_headers.js'
+import type { CloudFrontContext } from './cloud_front_context.js'
+import type { CloudFrontRequest } from './cloud_front_request.js'
+import type { CloudFrontEdgeEvent } from './cloud_front_edge_event.js'
+import type { Callback } from './callback.js'
+
+export type { CloudFrontOrigin } from './cloud_front_origin.js'
+export type { CloudFrontContext } from './cloud_front_context.js'
+export type { CloudFrontHeader } from './cloud_front_header.js'
+export type { CloudFrontHeaders } from './cloud_front_headers.js'
+export type { CloudFrontCustomOrigin } from './cloud_front_custom_origin.js'
+export type { CloudFrontS3Origin } from './cloud_front_s3_origin.js'
+export type { CloudFrontRequest } from './cloud_front_request.js'
+export type { CloudFrontResponse } from './cloud_front_response.js'
+export type { CloudFrontConfig } from './cloud_front_config.js'
+export type { CloudFrontEvent } from './cloud_front_event.js'
+export type { CloudFrontEdgeEvent } from './cloud_front_edge_event.js'
+export type { Callback } from './callback.js'
+
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 globalThis.crypto ??= crypto
-
-interface CloudFrontHeader {
-  key: string
-  value: string
-}
-
-interface CloudFrontHeaders {
-  [name: string]: CloudFrontHeader[]
-}
-
-interface CloudFrontCustomOrigin {
-  customHeaders: CloudFrontHeaders
-  domainName: string
-  keepaliveTimeout: number
-  path: string
-  port: number
-  protocol: string
-  readTimeout: number
-  sslProtocols: string[]
-}
 // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-event-structure.html
-interface CloudFrontS3Origin {
-  authMethod: 'origin-access-identity' | 'none'
-  customHeaders: CloudFrontHeaders
-  domainName: string
-  path: string
-  region: string
-}
-type CloudFrontOrigin =
-  | { s3: CloudFrontS3Origin; custom?: never }
-  | { custom: CloudFrontCustomOrigin; s3?: never }
-
-export interface CloudFrontRequest {
-  clientIp: string
-  headers: CloudFrontHeaders
-  method: string
-  querystring: string
-  uri: string
-  body?: {
-    inputTruncated: boolean
-    action: string
-    encoding: string
-    data: string
-  }
-  origin?: CloudFrontOrigin
-}
-
-export interface CloudFrontResponse {
-  headers: CloudFrontHeaders
-  status: string
-  statusDescription?: string
-}
-
-export interface CloudFrontConfig {
-  distributionDomainName: string
-  distributionId: string
-  eventType: string
-  requestId: string
-}
-
-interface CloudFrontEvent {
-  cf: {
-    config: CloudFrontConfig
-    request: CloudFrontRequest
-    response?: CloudFrontResponse
-  }
-}
-
-export interface CloudFrontEdgeEvent {
-  Records: CloudFrontEvent[]
-}
-
-type CloudFrontContext = {}
-
-export interface Callback {
-  (err: Error | null, result?: CloudFrontRequest | CloudFrontResult): void
-}
-
 // https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-generating-http-responses-in-requests.html#lambda-generating-http-responses-programming-model
-interface CloudFrontResult {
+export interface CloudFrontResult {
   status: string
   statusDescription?: string
   headers?: {

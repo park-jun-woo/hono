@@ -1,113 +1,28 @@
-/**
- * @module
- * Types utility.
- */
+//ff:type feature=utils type=model
+//ff:what Types
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export type Expect<T extends true> = T
-export type Equal<X, Y> =
-  (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? true : false
-export type NotEqual<X, Y> = true extends Equal<X, Y> ? false : true
 
-export type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
-  k: infer I
-) => void
-  ? I
-  : never
-
-export type RemoveBlankRecord<T> =
-  T extends Record<infer K, unknown> ? (K extends string ? T : never) : never
-
-export type IfAnyThenEmptyObject<T> = 0 extends 1 & T ? {} : T
-
-export type JSONPrimitive = string | boolean | number | null
-export type JSONArray = (JSONPrimitive | JSONObject | JSONArray)[]
-export type JSONObject = {
-  [key: string]: JSONPrimitive | JSONArray | JSONObject | object | InvalidJSONValue
-}
-export type InvalidJSONValue = undefined | symbol | ((...args: unknown[]) => unknown)
-
-type InvalidToNull<T> = T extends InvalidJSONValue ? null : T
-
-type IsInvalid<T> = T extends InvalidJSONValue ? true : false
-
-/**
- * symbol keys are omitted through `JSON.stringify`
- */
-type OmitSymbolKeys<T> = { [K in keyof T as K extends symbol ? never : K]: T[K] }
-
-export type JSONValue = JSONObject | JSONArray | JSONPrimitive
-/**
- * Convert a type to a JSON-compatible type.
- *
- * Non-JSON values such as `Date` implement `.toJSON()`,
- * so they can be transformed to a value assignable to `JSONObject`
- *
- * `JSON.stringify()` throws a `TypeError` when it encounters a `bigint` value,
- * unless a custom `replacer` function or `.toJSON()` method is provided.
- *
- * This behaviour can be controlled by the `TError` generic type parameter,
- * which defaults to `bigint | ReadonlyArray<bigint>`.
- * You can set it to `never` to disable this check.
- */
-export type JSONParsed<T, TError = bigint | ReadonlyArray<bigint>> = T extends {
-  toJSON(): infer J
-}
-  ? (() => J) extends () => JSONPrimitive
-    ? J
-    : (() => J) extends () => { toJSON(): unknown }
-      ? {}
-      : JSONParsed<J, TError>
-  : T extends JSONPrimitive
-    ? T
-    : T extends InvalidJSONValue
-      ? never
-      : T extends ReadonlyArray<unknown>
-        ? { [K in keyof T]: JSONParsed<InvalidToNull<T[K]>, TError> }
-        : T extends Set<unknown> | Map<unknown, unknown> | Record<string, never>
-          ? {}
-          : T extends object
-            ? T[keyof T] extends TError
-              ? never
-              : {
-                  [K in keyof OmitSymbolKeys<T> as IsInvalid<T[K]> extends true
-                    ? never
-                    : K]: boolean extends IsInvalid<T[K]>
-                    ? JSONParsed<T[K], TError> | undefined
-                    : JSONParsed<T[K], TError>
-                }
-            : T extends unknown
-              ? T extends TError
-                ? never
-                : JSONValue
-              : never
-
-/**
- * Useful to flatten the type output to improve type hints shown in editors. And also to transform an interface into a type to aide with assignability.
- * @copyright from sindresorhus/type-fest
- */
-export type Simplify<T> = { [KeyType in keyof T]: T[KeyType] } & {}
-
-/**
- * A simple extension of Simplify that will deeply traverse array elements.
- */
-export type SimplifyDeepArray<T> = T extends any[]
-  ? { [E in keyof T]: SimplifyDeepArray<T[E]> }
-  : Simplify<T>
-
-export type InterfaceToType<T> = T extends Function ? T : { [K in keyof T]: InterfaceToType<T[K]> }
-
-export type RequiredKeysOf<BaseType extends object> = Exclude<
-  {
-    [Key in keyof BaseType]: BaseType extends Record<Key, BaseType[Key]> ? Key : never
-  }[keyof BaseType],
-  undefined
->
-
-export type HasRequiredKeys<BaseType extends object> =
-  RequiredKeysOf<BaseType> extends never ? false : true
-
-export type IsAny<T> = boolean extends (T extends never ? true : false) ? true : false
+export type { Expect } from './expect.js'
+export type { Equal } from './equal.js'
+export type { NotEqual } from './not_equal.js'
+export type { UnionToIntersection } from './union_to_intersection.js'
+export type { RemoveBlankRecord } from './remove_blank_record.js'
+export type { IfAnyThenEmptyObject } from './if_any_then_empty_object.js'
+export type { JSONPrimitive } from './json_primitive.js'
+export type { JSONArray } from './json_array.js'
+export type { JSONObject } from './json_object.js'
+export type { InvalidJSONValue } from './invalid_json_value.js'
+export type { InvalidToNull } from './invalid_to_null.js'
+export type { IsInvalid } from './is_invalid.js'
+export type { OmitSymbolKeys } from './omit_symbol_keys.js'
+export type { JSONValue } from './json_value.js'
+export type { JSONParsed } from './json_parsed.js'
+export type { Simplify } from './simplify.js'
+export type { SimplifyDeepArray } from './simplify_deep_array.js'
+export type { InterfaceToType } from './interface_to_type.js'
+export type { RequiredKeysOf } from './required_keys_of.js'
+export type { HasRequiredKeys } from './has_required_keys.js'
+export type { IsAny } from './is_any.js'
 
 /**
  * String literal types with auto-completion

@@ -1,32 +1,24 @@
+//ff:type feature=utils type=model
+//ff:what Cookie
 /**
  * @module
  * Cookie utility.
  */
 
 import { decodeURIComponent_, tryDecode } from './url'
+import type { SecureCookieConstraint } from './secure_cookie_constraint.js'
+import type { HostCookieConstraint } from './host_cookie_constraint.js'
+import type { CookieOptions } from './cookie_options.js'
+import type { Cookie } from './cookie_def.js'
+import type { SignedCookie } from './signed_cookie.js'
 
-export type Cookie = Record<string, string>
-export type SignedCookie = Record<string, string | false>
-
-type PartitionedCookieConstraint =
-  | { partitioned: true; secure: true }
-  | { partitioned?: boolean; secure?: boolean } // reset to default
-type SecureCookieConstraint = { secure: true }
-type HostCookieConstraint = { secure: true; path: '/'; domain?: undefined }
-
-export type CookieOptions = {
-  domain?: string
-  expires?: Date
-  httpOnly?: boolean
-  maxAge?: number
-  path?: string
-  secure?: boolean
-  sameSite?: 'Strict' | 'Lax' | 'None' | 'strict' | 'lax' | 'none'
-  partitioned?: boolean
-  priority?: 'Low' | 'Medium' | 'High' | 'low' | 'medium' | 'high'
-  prefix?: CookiePrefixOptions
-} & PartitionedCookieConstraint
-export type CookiePrefixOptions = 'host' | 'secure'
+export type { Cookie } from './cookie_def.js'
+export type { SignedCookie } from './signed_cookie.js'
+export type { PartitionedCookieConstraint } from './partitioned_cookie_constraint.js'
+export type { SecureCookieConstraint } from './secure_cookie_constraint.js'
+export type { HostCookieConstraint } from './host_cookie_constraint.js'
+export type { CookieOptions } from './cookie_options.js'
+export type { CookiePrefixOptions } from './cookie_prefix_options.js'
 
 export type CookieConstraint<Name> = Name extends `__Secure-${string}`
   ? CookieOptions & SecureCookieConstraint

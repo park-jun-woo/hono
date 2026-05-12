@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Hono
 import { HonoBase } from './hono-base'
 import type { HonoOptions } from './hono-base'
 import { RegExpRouter } from './router/reg-exp-router'

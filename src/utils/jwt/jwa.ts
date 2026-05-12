@@ -1,3 +1,9 @@
+
+
+export type { SignatureAlgorithm } from './signature_algorithm.js'
+export type { SymmetricAlgorithm } from './symmetric_algorithm.js'
+export type { AsymmetricAlgorithm } from './asymmetric_algorithm.js'
+
 /**
  * @module
  * JSON Web Algorithms (JWA)
@@ -19,19 +25,3 @@ export enum AlgorithmTypes {
   ES512 = 'ES512',
   EdDSA = 'EdDSA',
 }
-
-export type SignatureAlgorithm = keyof typeof AlgorithmTypes
-
-export type SymmetricAlgorithm = 'HS256' | 'HS384' | 'HS512'
-
-export type AsymmetricAlgorithm =
-  | 'RS256'
-  | 'RS384'
-  | 'RS512'
-  | 'PS256'
-  | 'PS384'
-  | 'PS512'
-  | 'ES256'
-  | 'ES384'
-  | 'ES512'
-  | 'EdDSA'

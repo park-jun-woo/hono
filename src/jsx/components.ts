@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Components
 import { raw } from '../helper/html'
 import type { HtmlEscapedCallback, HtmlEscapedString } from '../utils/html'
 import { HtmlEscapedCallbackPhase, resolveCallback } from '../utils/html'
@@ -8,6 +10,10 @@ import { ErrorBoundary as ErrorBoundaryDomRenderer } from './dom/components'
 import type { HasRenderToDom } from './dom/render'
 import { StreamingContext } from './streaming'
 import type { Child, FC, PropsWithChildren } from './'
+import type { ErrorHandler } from './error_handler.js'
+
+export type { ErrorHandler } from './error_handler.js'
+
 
 let errorBoundaryCounter = 0
 
@@ -40,8 +46,6 @@ const resolveChildEarly = (c: Child): HtmlEscapedString | Promise<HtmlEscapedStr
     }
   }
 }
-
-export type ErrorHandler = (error: Error) => void
 export type FallbackRender = (error: Error) => Child
 
 /**

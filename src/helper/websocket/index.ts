@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Index
 /**
  * @module
  * WebSocket Helper for Hono.
@@ -7,62 +9,23 @@
 import type { Context } from '../../context'
 import type { MiddlewareHandler, TypedResponse } from '../../types'
 import type { StatusCode } from '../../utils/http-status'
+import type { WSReadyState } from './ws_ready_state.js'
+import type { WSContextInit } from './ws_context_init.js'
+import type { SendOptions } from './send_options.js'
+import type { WSMessageReceive } from './ws_message_receive.js'
+import type { WebSocketHelperDefineHandler } from './web_socket_helper_define_handler.js'
+import type { WSEvents } from './ws_events.js'
+import type { UpgradeWebSocket } from './upgrade_web_socket.js'
 
-/**
- * WebSocket Event Listeners type
- */
-export interface WSEvents<T = unknown> {
-  onOpen?: (evt: Event, ws: WSContext<T>) => void
-  onMessage?: (evt: MessageEvent<WSMessageReceive>, ws: WSContext<T>) => void
-  onClose?: (evt: CloseEvent, ws: WSContext<T>) => void
-  onError?: (evt: Event, ws: WSContext<T>) => void
-}
+export type { WSReadyState } from './ws_ready_state.js'
+export type { WSMessageReceive } from './ws_message_receive.js'
+export type { WebSocketHelperDefineHandler } from './web_socket_helper_define_handler.js'
+export type { WSEvents } from './ws_events.js'
+export type { UpgradeWebSocket } from './upgrade_web_socket.js'
+export type { WSContextInit } from './ws_context_init.js'
+export type { SendOptions } from './send_options.js'
+export type { WebSocketHelperDefineContext } from './web_socket_helper_define_context.js'
 
-/**
- * Upgrade WebSocket Type
- */
-export interface UpgradeWebSocket<T = unknown, U = any, _WSEvents = WSEvents<T>> {
-  (
-    createEvents: (c: Context) => _WSEvents | Promise<_WSEvents>,
-    options?: U
-  ): MiddlewareHandler<
-    any,
-    string,
-    {
-      outputFormat: 'ws'
-    }
-  >
-  (
-    c: Context,
-    events: _WSEvents,
-    options?: U
-  ): Promise<Response & TypedResponse<{}, StatusCode, 'ws'>>
-}
-
-/**
- * ReadyState for WebSocket
- */
-export type WSReadyState = 0 | 1 | 2 | 3
-
-/**
- * An argument for WSContext class
- */
-export interface WSContextInit<T = unknown> {
-  send(data: string | ArrayBuffer | Uint8Array, options: SendOptions): void
-  close(code?: number, reason?: string): void
-
-  raw?: T
-  readyState: WSReadyState
-  url?: string | URL | null
-  protocol?: string | null
-}
-
-/**
- * Options for sending message
- */
-export interface SendOptions {
-  compress?: boolean
-}
 
 /**
  * A context for controlling WebSockets
@@ -90,21 +53,11 @@ export class WSContext<T = unknown> {
   }
 }
 
-export type WSMessageReceive = string | Blob | ArrayBufferLike
-
 export const createWSMessageEvent = (source: WSMessageReceive): MessageEvent<WSMessageReceive> => {
   return new MessageEvent<WSMessageReceive>('message', {
     data: source,
   })
 }
-
-export interface WebSocketHelperDefineContext {}
-export type WebSocketHelperDefineHandler<T, U> = (
-  c: Context,
-  events: WSEvents<T>,
-  options?: U
-) => Promise<Response | void> | Response | void
-
 /**
  * Create a WebSocket adapter/helper
  */

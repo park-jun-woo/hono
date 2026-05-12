@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * Powered By Middleware for Hono.

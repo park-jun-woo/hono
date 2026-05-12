@@ -1,3 +1,5 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:what Index test
 import { stream, streamSSE } from '../../helper/streaming'
 import { Hono } from '../../hono'
 import { compress } from '.'

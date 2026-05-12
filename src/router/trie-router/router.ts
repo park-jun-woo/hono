@@ -1,3 +1,5 @@
+//ff:type feature=router type=router
+//ff:what Router
 import type { Result, Router } from '../../router'
 import { checkOptionalParameter } from '../../utils/url'
 import { Node } from './node'

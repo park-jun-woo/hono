@@ -1,3 +1,5 @@
+//ff:type feature=utils type=model
+//ff:what Mime
 /**
  * @module
  * MIME utility.

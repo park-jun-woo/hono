@@ -1,3 +1,5 @@
+//ff:func feature=helper type=util control=sequence
+//ff:what Index test
 /** @jsxImportSource ../../jsx */
 import { Hono } from '../../'
 import { html } from '../../helper/html'
@@ -21,9 +23,7 @@ async function toString(
   return resolveCallback(await template, HtmlEscapedCallbackPhase.Stringify, false, template)
 }
 
-async function toCSS(
-  template: JSXNode | Promise<HtmlEscapedString> | Promise<string> | HtmlEscapedString
-) {
+const toCSS = async (template: JSXNode | Promise<HtmlEscapedString> | Promise<string> | HtmlEscapedString) => {
   return (await toString(template))
     .replace(/.*?=(".*")<\/script.*/, '$1')
     .replace(/\.css-\d+/g, '.css-123')

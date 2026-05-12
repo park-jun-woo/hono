@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index test
 import type { ExecutionContext } from '../../context'
 import { Hono } from '../../hono'
 import { cache } from '.'

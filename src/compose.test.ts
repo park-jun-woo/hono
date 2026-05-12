@@ -1,9 +1,10 @@
+//ff:func feature=core type=util control=sequence
+//ff:type feature=core type=model
+//ff:what Compose test
 import { compose } from './compose'
 import { Context } from './context'
-import type { Params } from './router'
 import type { Next } from './types'
-
-type MiddlewareTuple = [[Function, unknown], Params]
+import type { MiddlewareTuple } from './middleware_tuple'
 
 class ExpectedError extends Error {}
 

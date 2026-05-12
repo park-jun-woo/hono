@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Index
 /**
  * Provide hooks used only in jsx/dom
  */

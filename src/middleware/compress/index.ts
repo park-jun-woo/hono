@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * Compress Middleware for Hono.

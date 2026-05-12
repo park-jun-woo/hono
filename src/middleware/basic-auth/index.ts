@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * Basic Auth Middleware for Hono.
@@ -8,8 +10,9 @@ import { HTTPException } from '../../http-exception'
 import type { MiddlewareHandler } from '../../types'
 import { auth } from '../../utils/basic-auth'
 import { timingSafeEqual } from '../../utils/buffer'
+import type { MessageFunction } from './message_function.js'
 
-type MessageFunction = (c: Context) => string | object | Promise<string | object>
+export type { MessageFunction } from './message_function.js'
 
 type BasicAuthOptions =
   | {

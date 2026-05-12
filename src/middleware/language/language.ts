@@ -1,3 +1,6 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:type feature=middleware type=model
+//ff:what Language
 /**
  * @module
  * Language module for Hono.
@@ -6,43 +9,14 @@ import type { Context } from '../../context'
 import { setCookie, getCookie } from '../../helper/cookie'
 import type { MiddlewareHandler } from '../../types'
 import { parseAccept } from '../../utils/accept'
+import type { DetectorOptions } from './detector_options_def.js'
 
-export type DetectorType = 'path' | 'querystring' | 'cookie' | 'header'
-export type CacheType = 'cookie'
+export type { DetectorType } from './detector_type_def.js'
+export type { CacheType } from './cache_type_def.js'
+export type { DetectorFunction } from './detector_function_def.js'
+export type { Detectors } from './detectors_def.js'
+export type { DetectorOptions } from './detector_options_def.js'
 
-export interface DetectorOptions {
-  /** Order of language detection strategies */
-  order: DetectorType[]
-  /** Query parameter name for language */
-  lookupQueryString: string
-  /** Cookie name for language */
-  lookupCookie: string
-  /** Index in URL path where language code appears */
-  lookupFromPathIndex: number
-  /** Header key for language detection */
-  lookupFromHeaderKey: string
-  /** Caching strategies */
-  caches: CacheType[] | false
-  /** Cookie configuration options */
-  cookieOptions?: {
-    domain?: string
-    path?: string
-    sameSite?: 'Strict' | 'Lax' | 'None'
-    secure?: boolean
-    maxAge?: number
-    httpOnly?: boolean
-  }
-  /** Whether to ignore case in language codes */
-  ignoreCase: boolean
-  /** Default language if none detected */
-  fallbackLanguage: string
-  /** List of supported language codes */
-  supportedLanguages: string[]
-  /** Optional function to transform detected language codes */
-  convertDetectedLanguage?: (lang: string) => string
-  /** Enable debug logging */
-  debug?: boolean
-}
 
 export interface LanguageVariables {
   language: string
@@ -149,7 +123,7 @@ export const detectFromCookie = (c: Context, options: DetectorOptions): string |
 /**
  * Detects language from Accept-Language header
  */
-export function detectFromHeader(c: Context, options: DetectorOptions): string | undefined {
+export const detectFromHeader = (c: Context, options: DetectorOptions): string | undefined => {
   try {
     const acceptLanguage = c.req.header(options.lookupFromHeaderKey)
     if (!acceptLanguage) {
@@ -172,7 +146,7 @@ export function detectFromHeader(c: Context, options: DetectorOptions): string |
 /**
  * Detects language from URL path
  */
-export function detectFromPath(c: Context, options: DetectorOptions): string | undefined {
+export const detectFromPath = (c: Context, options: DetectorOptions): string | undefined => {
   try {
     const url = new URL(c.req.url)
     const pathSegments = url.pathname.split('/').filter(Boolean)
@@ -192,19 +166,12 @@ export const detectors = {
   header: detectFromHeader,
   path: detectFromPath,
 } as const
-
-/** Type for detector functions */
-export type DetectorFunction = (c: Context, options: DetectorOptions) => string | undefined
-
-/** Type-safe detector map */
-export type Detectors = Record<keyof typeof detectors, DetectorFunction>
-
 /**
  * Validate detector options
  * @param options Detector options to validate
  * @throws Error if options are invalid
  */
-export function validateOptions(options: DetectorOptions): void {
+export const validateOptions = (options: DetectorOptions): void => {
   if (!options.supportedLanguages.includes(options.fallbackLanguage)) {
     throw new Error('Fallback language must be included in supported languages')
   }
@@ -221,7 +188,7 @@ export function validateOptions(options: DetectorOptions): void {
 /**
  * Cache detected language
  */
-function cacheLanguage(c: Context, language: string, options: DetectorOptions): void {
+const cacheLanguage = (c: Context, language: string, options: DetectorOptions): void => {
   if (!Array.isArray(options.caches) || !options.caches.includes('cookie')) {
     return
   }

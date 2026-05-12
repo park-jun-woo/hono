@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Request id
 /**
  * @module
  * Request ID Middleware for Hono.
@@ -6,9 +8,7 @@
 import type { Context } from '../../context'
 import type { MiddlewareHandler } from '../../types'
 
-export type RequestIdVariables = {
-  requestId: string
-}
+export type { RequestIdVariables } from './request_id_variables.js'
 
 export type RequestIdOptions = {
   limitLength?: number

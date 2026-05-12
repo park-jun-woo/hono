@@ -1,3 +1,6 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:type feature=middleware type=model
+//ff:what Secure headers
 /**
  * @module
  * Secure Headers Middleware for Hono.
@@ -7,66 +10,30 @@ import type { Context } from '../../context'
 import type { MiddlewareHandler } from '../../types'
 import { encodeBase64 } from '../../utils/encode'
 import type { PermissionsPolicyDirective } from './permissions-policy'
+import type { PermissionsPolicyOptions } from './permissions_policy_options_def.js'
+import type { overridableHeader } from './overridable_header_def.js'
+import type { ContentSecurityPolicyOptions } from './content_security_policy_options_def.js'
+import type { ReportToOptions } from './report_to_options_def.js'
+import type { ReportingEndpointOptions } from './reporting_endpoint_options_def.js'
+import type { HeadersMap } from './headers_map_def.js'
+import type { ContentSecurityPolicyOptionHandler } from './content_security_policy_option_handler_def.js'
+import type { SecureHeadersCallback } from './secure_headers_callback_def.js'
 
-export type SecureHeadersVariables = {
-  secureHeadersNonce?: string
-}
+export type { SecureHeadersVariables } from './secure_headers_variables_def.js'
+export type { ContentSecurityPolicyOptionHandler } from './content_security_policy_option_handler_def.js'
+export type { ContentSecurityPolicyOptionValue } from './content_security_policy_option_value_def.js'
+export type { PermissionsPolicyValue } from './permissions_policy_value_def.js'
+export type { PermissionsPolicyOptions } from './permissions_policy_options_def.js'
+export type { overridableHeader } from './overridable_header_def.js'
+export type { HeadersMap } from './headers_map_def.js'
+export type { SecureHeadersCallback } from './secure_headers_callback_def.js'
+export type { ContentSecurityPolicyOptions } from './content_security_policy_options_def.js'
+export type { ReportToOptions } from './report_to_options_def.js'
+export type { ReportToEndpoint } from './report_to_endpoint_def.js'
+export type { ReportingEndpointOptions } from './reporting_endpoint_options_def.js'
 
-export type ContentSecurityPolicyOptionHandler = (ctx: Context, directive: string) => string
-type ContentSecurityPolicyOptionValue = (string | ContentSecurityPolicyOptionHandler)[]
 
-interface ContentSecurityPolicyOptions {
-  defaultSrc?: ContentSecurityPolicyOptionValue
-  baseUri?: ContentSecurityPolicyOptionValue
-  childSrc?: ContentSecurityPolicyOptionValue
-  connectSrc?: ContentSecurityPolicyOptionValue
-  fontSrc?: ContentSecurityPolicyOptionValue
-  formAction?: ContentSecurityPolicyOptionValue
-  frameAncestors?: ContentSecurityPolicyOptionValue
-  frameSrc?: ContentSecurityPolicyOptionValue
-  imgSrc?: ContentSecurityPolicyOptionValue
-  manifestSrc?: ContentSecurityPolicyOptionValue
-  mediaSrc?: ContentSecurityPolicyOptionValue
-  objectSrc?: ContentSecurityPolicyOptionValue
-  reportTo?: string
-  reportUri?: string | string[]
-  sandbox?: ContentSecurityPolicyOptionValue
-  scriptSrc?: ContentSecurityPolicyOptionValue
-  scriptSrcAttr?: ContentSecurityPolicyOptionValue
-  scriptSrcElem?: ContentSecurityPolicyOptionValue
-  styleSrc?: ContentSecurityPolicyOptionValue
-  styleSrcAttr?: ContentSecurityPolicyOptionValue
-  styleSrcElem?: ContentSecurityPolicyOptionValue
-  upgradeInsecureRequests?: ContentSecurityPolicyOptionValue
-  workerSrc?: ContentSecurityPolicyOptionValue
-  requireTrustedTypesFor?: ContentSecurityPolicyOptionValue
-  trustedTypes?: ContentSecurityPolicyOptionValue
-}
-
-interface ReportToOptions {
-  group: string
-  max_age: number
-  endpoints: ReportToEndpoint[]
-}
-
-interface ReportToEndpoint {
-  url: string
-}
-
-interface ReportingEndpointOptions {
-  name: string
-  url: string
-}
-
-type PermissionsPolicyValue = '*' | 'self' | 'src' | 'none' | string
-
-type PermissionsPolicyOptions = Partial<
-  Record<PermissionsPolicyDirective, PermissionsPolicyValue[] | boolean>
->
-
-type overridableHeader = boolean | string
-
-interface SecureHeadersOptions {
+export interface SecureHeadersOptions {
   contentSecurityPolicy?: ContentSecurityPolicyOptions
   contentSecurityPolicyReportOnly?: ContentSecurityPolicyOptions
   crossOriginEmbedderPolicy?: overridableHeader
@@ -85,10 +52,6 @@ interface SecureHeadersOptions {
   xXssProtection?: overridableHeader
   removePoweredBy?: boolean
   permissionsPolicy?: PermissionsPolicyOptions
-}
-
-type HeadersMap = {
-  [key in keyof SecureHeadersOptions]: [string, string]
 }
 
 const HEADERS_MAP: HeadersMap = {
@@ -122,12 +85,6 @@ const DEFAULT_OPTIONS: SecureHeadersOptions = {
   removePoweredBy: true,
   permissionsPolicy: {},
 }
-
-type SecureHeadersCallback = (
-  ctx: Context,
-  headersToSet: [string, string | string[]][]
-) => [string, string][]
-
 const generateNonce = () => {
   const arrayBuffer = new Uint8Array(16)
   crypto.getRandomValues(arrayBuffer)
@@ -237,9 +194,7 @@ function getFilteredHeaders(options: SecureHeadersOptions): [string, string][] {
     })
 }
 
-function getCSPDirectives(
-  contentSecurityPolicy: ContentSecurityPolicyOptions
-): [SecureHeadersCallback | undefined, string | string[]] {
+const getCSPDirectives = (contentSecurityPolicy: ContentSecurityPolicyOptions): [SecureHeadersCallback | undefined, string | string[]] => {
   const callbacks: ((ctx: Context, values: string[]) => void)[] = []
   const resultValues: string[] = []
 
@@ -287,7 +242,7 @@ function getCSPDirectives(
       ]
 }
 
-function getPermissionsPolicyDirectives(policy: PermissionsPolicyOptions): string {
+const getPermissionsPolicyDirectives = (policy: PermissionsPolicyOptions): string => {
   return Object.entries(policy)
     .map(([directive, value]) => {
       const kebabDirective = camelToKebab(directive)
@@ -313,21 +268,19 @@ function getPermissionsPolicyDirectives(policy: PermissionsPolicyOptions): strin
     .join(', ')
 }
 
-function camelToKebab(str: string): string {
+const camelToKebab = (str: string): string => {
   return str.replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase()
 }
 
-function getReportingEndpoints(
-  reportingEndpoints: SecureHeadersOptions['reportingEndpoints'] = []
-): string {
+const getReportingEndpoints = (reportingEndpoints: SecureHeadersOptions['reportingEndpoints'] = []): string => {
   return reportingEndpoints.map((endpoint) => `${endpoint.name}="${endpoint.url}"`).join(', ')
 }
 
-function getReportToOptions(reportTo: SecureHeadersOptions['reportTo'] = []): string {
+const getReportToOptions = (reportTo: SecureHeadersOptions['reportTo'] = []): string => {
   return reportTo.map((option) => JSON.stringify(option)).join(', ')
 }
 
-function setHeaders(ctx: Context, headersToSet: [string, string][]) {
+const setHeaders = (ctx: Context, headersToSet: [string, string][]) => {
   headersToSet.forEach(([header, value]) => {
     ctx.res.headers.set(header, value)
   })

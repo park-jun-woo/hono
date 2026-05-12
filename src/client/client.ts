@@ -1,3 +1,5 @@
+//ff:type feature=client type=util
+//ff:what Client
 import type { Hono } from '../hono'
 import type { FormValue, ValidationTargets } from '../types'
 import { serialize } from '../utils/cookie'

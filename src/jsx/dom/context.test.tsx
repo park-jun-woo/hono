@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=util
+//ff:what Context test
 /** @jsxImportSource ../ */
 import { JSDOM } from 'jsdom'
 import {
@@ -10,14 +12,11 @@ import {
 // hono/jsx/jsx-runtime and hono/jsx/dom/jsx-runtime are tested in their respective settings
 import { createContext as createContextDom, render, useContext as useContextDom, useState } from '.' // for dom
 
-runner('Common', createContextCommon, useContextCommon)
-runner('DOM', createContextDom, useContextDom)
-
-function runner(
+const runner = (
   name: string,
   createContext: typeof createContextCommon,
   useContext: typeof useContextCommon
-) {
+) => {
   describe(name, () => {
     beforeAll(() => {
       global.requestAnimationFrame = (cb) => setTimeout(cb)
@@ -182,3 +181,6 @@ function runner(
     })
   })
 }
+
+runner('Common', createContextCommon, useContextCommon)
+runner('DOM', createContextDom, useContextDom)

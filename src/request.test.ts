@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Request test
 import { HTTPException } from './http-exception'
 import { cloneRawRequest, HonoRequest } from './request'
 import type { RouterRoute } from './types'

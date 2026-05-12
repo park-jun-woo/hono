@@ -1,34 +1,22 @@
+//ff:func feature=adapter type=adapter control=sequence
+//ff:type feature=adapter type=model
+//ff:what Handler
 import { Context } from '../../context'
 import type { Hono } from '../../hono'
 import { HTTPException } from '../../http-exception'
 import type { BlankSchema, Env, Input, MiddlewareHandler, Schema } from '../../types'
+import type { PagesFunction } from './pages_function.js'
+import type { EventContext } from './event_context.js'
+
+export type { Params } from './params.js'
+export type { EventContext } from './event_context.js'
+export type { PagesFunction } from './pages_function.js'
+
 
 // Ref: https://github.com/cloudflare/workerd/blob/main/types/defines/pages.d.ts
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Params<P extends string = any> = Record<P, string | string[]>
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type EventContext<Env = {}, P extends string = any, Data = Record<string, unknown>> = {
-  request: Request
-  functionPath: string
-  waitUntil: (promise: Promise<unknown>) => void
-  passThroughOnException: () => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  props: any
-  next: (input?: Request | string, init?: RequestInit) => Promise<Response>
-  env: Env & { ASSETS: { fetch: typeof fetch } }
-  params: Params<P>
-  data: Data
-}
-
-declare type PagesFunction<
-  Env = unknown,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Params extends string = any,
-  Data extends Record<string, unknown> = Record<string, unknown>,
-> = (context: EventContext<Env, Params, Data>) => Response | Promise<Response>
-
 export const handle =
   <E extends Env = Env, S extends Schema = BlankSchema, BasePath extends string = '/'>(
     app: Hono<E, S, BasePath>

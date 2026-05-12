@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Base
 import { raw } from '../helper/html'
 import { escapeToBuffer, resolveCallbackSync, stringBufferToString } from '../utils/html'
 import type { HtmlEscaped, HtmlEscapedString, StringBufferWithCallbacks } from '../utils/html'
@@ -16,16 +18,24 @@ import {
   normalizeIntrinsicElementKey,
   styleObjectForEach,
 } from './utils'
+import type { Props } from './props.js'
+import type { Child } from './child.js'
+import { JSXNode } from './jsx_node.js'
+import { JSXFunctionNode } from './jsx_function_node.js'
+import type { FC } from './fc.js'
+import type { MemorableFC } from './memorable_fc.js'
+
+export type { Props } from './props.js'
+export type { FC } from './fc.js'
+export type { DOMAttributes } from './dom_attributes.js'
+export type { LocalContexts } from './local_contexts.js'
+export type { Child } from './child.js'
+export type { MemorableFC } from './memorable_fc.js'
+export { JSXNode } from './jsx_node.js'
+export { JSXFunctionNode } from './jsx_function_node.js'
+
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Props = Record<string, any>
-export type FC<P = Props> = {
-  (props: P): HtmlEscapedString | Promise<HtmlEscapedString> | null
-  defaultProps?: Partial<P> | undefined
-  displayName?: string | undefined
-}
-export type DOMAttributes = HonoJSX.HTMLAttributes
-
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace JSX {
   export type Element = HtmlEscapedString | Promise<HtmlEscapedString>
@@ -40,10 +50,10 @@ export namespace JSX {
   }
 }
 
-let nameSpaceContext: Context<string> | undefined = undefined
+export let nameSpaceContext: Context<string> | undefined = undefined
 export const getNameSpaceContext = () => nameSpaceContext
 
-const toSVGAttributeName = (key: string): string =>
+export const toSVGAttributeName = (key: string): string =>
   /[A-Z]/.test(key) &&
   // Presentation attributes are findable in style object. "clip-path", "font-size", "stroke-width", etc.
   // Or other un-deprecated kebab-case attributes. "overline-position", "paint-order", "strikethrough-position", etc.
@@ -53,7 +63,7 @@ const toSVGAttributeName = (key: string): string =>
     ? key.replace(/([A-Z])/g, '-$1').toLowerCase()
     : key
 
-const emptyTags = [
+export const emptyTags = [
   'area',
   'base',
   'br',
@@ -99,7 +109,7 @@ export const booleanAttributes = [
   'selected',
 ]
 
-const childrenToStringToBuffer = (children: Child[], buffer: StringBufferWithCallbacks): void => {
+export const childrenToStringToBuffer = (children: Child[], buffer: StringBufferWithCallbacks): void => {
   for (let i = 0, len = children.length; i < len; i++) {
     const child = children[i]
     if (typeof child === 'string') {
@@ -118,180 +128,6 @@ const childrenToStringToBuffer = (children: Child[], buffer: StringBufferWithCal
     } else {
       // `child` type is `Child[]`, so stringify recursively
       childrenToStringToBuffer(child, buffer)
-    }
-  }
-}
-
-type LocalContexts = [Context<unknown>, unknown][]
-export type Child =
-  | string
-  | Promise<string>
-  | number
-  | JSXNode
-  | null
-  | undefined
-  | boolean
-  | Child[]
-export class JSXNode implements HtmlEscaped {
-  tag: string | Function
-  props: Props
-  key?: string
-  children: Child[]
-  isEscaped: true = true as const
-  localContexts?: LocalContexts
-  constructor(tag: string | Function, props: Props, children: Child[]) {
-    if (typeof tag !== 'function' && !isValidTagName(tag)) {
-      throw new Error(`Invalid JSX tag name: ${tag}`)
-    }
-    this.tag = tag
-    this.props = props
-    this.children = children
-  }
-
-  get type(): string | Function {
-    return this.tag as string
-  }
-
-  // Added for compatibility with libraries that rely on React's internal structure
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  get ref(): any {
-    return this.props.ref || null
-  }
-
-  toString(): string | Promise<string> {
-    const buffer: StringBufferWithCallbacks = [''] as StringBufferWithCallbacks
-    this.localContexts?.forEach(([context, value]) => {
-      context.values.push(value)
-    })
-    try {
-      this.toStringToBuffer(buffer)
-    } finally {
-      this.localContexts?.forEach(([context]) => {
-        context.values.pop()
-      })
-    }
-    return buffer.length === 1
-      ? 'callbacks' in buffer
-        ? resolveCallbackSync(raw(buffer[0], buffer.callbacks)).toString()
-        : buffer[0]
-      : stringBufferToString(buffer, buffer.callbacks)
-  }
-
-  toStringToBuffer(buffer: StringBufferWithCallbacks): void {
-    const tag = this.tag as string
-    const props = this.props
-    let { children } = this
-
-    buffer[0] += `<${tag}`
-
-    const normalizeKey: (key: string) => string =
-      tag === 'svg' || (nameSpaceContext && useContext(nameSpaceContext) === 'svg')
-        ? (key) => toSVGAttributeName(normalizeIntrinsicElementKey(key))
-        : (key) => normalizeIntrinsicElementKey(key)
-    for (let [key, v] of Object.entries(props)) {
-      key = normalizeKey(key)
-      if (!isValidAttributeName(key)) {
-        continue
-      }
-      if (key === 'children') {
-        // skip children
-      } else if (key === 'style' && typeof v === 'object') {
-        // object to style strings
-        let styleStr = ''
-        styleObjectForEach(v, (property, value) => {
-          if (value != null) {
-            styleStr += `${styleStr ? ';' : ''}${property}:${value}`
-          }
-        })
-        buffer[0] += ' style="'
-        escapeToBuffer(styleStr, buffer)
-        buffer[0] += '"'
-      } else if (typeof v === 'string') {
-        buffer[0] += ` ${key}="`
-        escapeToBuffer(v, buffer)
-        buffer[0] += '"'
-      } else if (v === null || v === undefined) {
-        // Do nothing
-      } else if (typeof v === 'number' || (v as HtmlEscaped).isEscaped) {
-        buffer[0] += ` ${key}="${v}"`
-      } else if (typeof v === 'boolean' && booleanAttributes.includes(key)) {
-        if (v) {
-          buffer[0] += ` ${key}=""`
-        }
-      } else if (key === 'dangerouslySetInnerHTML') {
-        if (children.length > 0) {
-          throw new Error('Can only set one of `children` or `props.dangerouslySetInnerHTML`.')
-        }
-
-        children = [raw(v.__html)]
-      } else if (v instanceof Promise) {
-        buffer[0] += ` ${key}="`
-        buffer.unshift('"', v)
-      } else if (typeof v === 'function') {
-        if (!key.startsWith('on') && key !== 'ref') {
-          throw new Error(`Invalid prop '${key}' of type 'function' supplied to '${tag}'.`)
-        }
-        // maybe event handler for client components, just ignore in server components
-      } else {
-        buffer[0] += ` ${key}="`
-        escapeToBuffer(v.toString(), buffer)
-        buffer[0] += '"'
-      }
-    }
-
-    if (emptyTags.includes(tag as string) && children.length === 0) {
-      buffer[0] += '/>'
-      return
-    }
-
-    buffer[0] += '>'
-
-    childrenToStringToBuffer(children, buffer)
-
-    buffer[0] += `</${tag}>`
-  }
-}
-
-class JSXFunctionNode extends JSXNode {
-  override toStringToBuffer(buffer: StringBufferWithCallbacks): void {
-    const { children } = this
-
-    const props = { ...this.props }
-    if (children.length) {
-      props.children = children.length === 1 ? children[0] : children
-    }
-
-    const res = (this.tag as Function).call(null, props)
-
-    if (typeof res === 'boolean' || res == null) {
-      // boolean or null or undefined
-      return
-    } else if (res instanceof Promise) {
-      if (globalContexts.length === 0) {
-        buffer.unshift('', res)
-      } else {
-        // save current contexts for resuming
-        const currentContexts: LocalContexts = globalContexts.map((c) => [c, c.values.at(-1)])
-        buffer.unshift(
-          '',
-          res.then((childRes) => {
-            if (childRes instanceof JSXNode) {
-              childRes.localContexts = currentContexts
-            }
-            return childRes
-          })
-        )
-      }
-    } else if (res instanceof JSXNode) {
-      res.toStringToBuffer(buffer)
-    } else if (typeof res === 'number' || (res as HtmlEscaped).isEscaped) {
-      buffer[0] += res
-      if (res.callbacks) {
-        buffer.callbacks ||= []
-        buffer.callbacks.push(...res.callbacks)
-      }
-    } else {
-      escapeToBuffer(res, buffer)
     }
   }
 }
@@ -384,10 +220,6 @@ export const shallowEqual = (a: Props, b: Props): boolean => {
   }
 
   return true
-}
-
-export type MemorableFC<T> = FC<T> & {
-  [DOM_MEMO]: (prevProps: Readonly<T>, nextProps: Readonly<T>) => boolean
 }
 export const memo = <T>(
   component: FC<T>,

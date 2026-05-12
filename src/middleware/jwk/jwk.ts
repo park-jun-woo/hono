@@ -1,3 +1,5 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:what Jwk
 /**
  * @module
  * JWK Auth Middleware for Hono.

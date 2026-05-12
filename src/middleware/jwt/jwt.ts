@@ -1,3 +1,6 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:type feature=middleware type=model
+//ff:what Jwt
 /**
  * @module
  * JWT Auth Middleware for Hono.

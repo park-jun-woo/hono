@@ -1,3 +1,5 @@
+//ff:type feature=helper type=adapter
+//ff:what Index
 /**
  * @module
  * Adapter Helper for Hono.

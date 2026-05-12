@@ -1,9 +1,15 @@
+//ff:type feature=utils type=model
+//ff:what Buffer
 /**
  * @module
  * Buffer utility.
  */
 
 import { sha256 } from './crypto'
+import type { StringHashFunction } from './string_hash_function.js'
+
+export type { StringHashFunction } from './string_hash_function.js'
+
 
 export const equal = (a: ArrayBuffer, b: ArrayBuffer): boolean => {
   if (a === b) {
@@ -38,9 +44,6 @@ const constantTimeEqualString = (a: string, b: string): boolean => {
   }
   return out === 0
 }
-
-type StringHashFunction = (input: string) => string | null | Promise<string | null>
-
 const timingSafeEqualString = async (
   a: string,
   b: string,

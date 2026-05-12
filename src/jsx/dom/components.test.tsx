@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=util
+//ff:what Components test
 /** @jsxImportSource ../ */
 import { JSDOM } from 'jsdom'
 import { ErrorBoundary as ErrorBoundaryCommon, Suspense as SuspenseCommon } from '..' // for common
@@ -6,14 +8,11 @@ import { ErrorBoundary as ErrorBoundaryCommon, Suspense as SuspenseCommon } from
 import { use, useState } from '../hooks'
 import { ErrorBoundary as ErrorBoundaryDom, Suspense as SuspenseDom, render } from '.' // for dom
 
-runner('Common', SuspenseCommon, ErrorBoundaryCommon)
-runner('DOM', SuspenseDom, ErrorBoundaryDom)
-
-function runner(
+const runner = (
   name: string,
   Suspense: typeof SuspenseDom,
   ErrorBoundary: typeof ErrorBoundaryDom
-) {
+) => {
   describe(name, () => {
     beforeAll(() => {
       global.requestAnimationFrame = (cb) => setTimeout(cb)
@@ -328,3 +327,6 @@ function runner(
     })
   })
 }
+
+runner('Common', SuspenseCommon, ErrorBoundaryCommon)
+runner('DOM', SuspenseDom, ErrorBoundaryDom)

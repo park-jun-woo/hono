@@ -1,3 +1,5 @@
+//ff:func feature=utils type=util control=sequence
+//ff:what Color
 /**
  * @module
  * Color utility.
@@ -33,7 +35,7 @@ export function getColorEnabled(): boolean {
  *
  * @returns {boolean}
  */
-export async function getColorEnabledAsync(): Promise<boolean> {
+export const getColorEnabledAsync = async (): Promise<boolean> => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { navigator } = globalThis as any
   // Avoid analysis of cloudflare scheme by bundlers

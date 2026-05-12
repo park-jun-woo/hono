@@ -1,0 +1,27 @@
+required:
+  feature:
+    core: "core framework — Hono app, context, request, response"
+    router: "URL routing — trie, pattern, linear, smart"
+    middleware: "middleware — cors, auth, cache, compress, logger, etc."
+    helper: "helper functions — html, css, streaming, websocket"
+    adapter: "platform adapters — cloudflare, deno, bun, node, lambda"
+    utils: "general utilities — url, mime, cookie, html encoding"
+    jsx: "JSX runtime and rendering"
+    validator: "request validation"
+    client: "hono client (RPC-style type-safe calls)"
+  type:
+    handler: "request handler or middleware function"
+    model: "data structure / class / type definition"
+    parser: "parsing logic"
+    formatter: "output formatter"
+    util: "general utility function"
+    router: "URL router implementation"
+    renderer: "template/JSX renderer"
+    adapter: "platform-specific adapter"
+
+optional:
+  pattern:
+    error-collection: "collect errors for batch reporting"
+  level:
+    error: ""
+    warning: ""

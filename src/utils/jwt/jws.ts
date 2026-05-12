@@ -1,3 +1,6 @@
+//ff:func feature=utils type=model control=sequence
+//ff:type feature=utils type=model
+//ff:what Jws
 /**
  * @module
  * JSON Web Signature (JWS)
@@ -9,22 +12,19 @@ import { decodeBase64 } from '../encode'
 import type { SignatureAlgorithm } from './jwa'
 import { CryptoKeyUsage, JwtAlgorithmNotImplemented } from './types'
 import { utf8Encoder } from './utf8'
+import type { SignatureKey } from './signature_key_def.js'
+import type { KeyImporterAlgorithm } from './key_importer_algorithm_def.js'
+import type { KeyAlgorithm } from './key_algorithm_def.js'
 
-type KeyImporterAlgorithm = Parameters<typeof crypto.subtle.importKey>[2]
-type KeyAlgorithm =
-  | AlgorithmIdentifier
-  | RsaHashedImportParams
-  | (RsaPssParams & RsaHashedImportParams)
-  | (EcdsaParams & EcKeyImportParams)
-  | HmacImportParams
+export type { KeyImporterAlgorithm } from './key_importer_algorithm_def.js'
+export type { KeyAlgorithm } from './key_algorithm_def.js'
+export type { SignatureKey } from './signature_key_def.js'
 
 // Extending the JsonWebKey interface to include the "kid" property.
 // https://datatracker.ietf.org/doc/html/rfc7515#section-4.1.4
 export interface HonoJsonWebKey extends JsonWebKey {
   kid?: string
 }
-
-export type SignatureKey = string | HonoJsonWebKey | CryptoKey
 
 export async function signing(
   privateKey: SignatureKey,
@@ -36,22 +36,17 @@ export async function signing(
   return await crypto.subtle.sign(algorithm, cryptoKey, data)
 }
 
-export async function verifying(
-  publicKey: SignatureKey,
-  alg: SignatureAlgorithm,
-  signature: BufferSource,
-  data: BufferSource
-): Promise<boolean> {
+export const verifying = async (publicKey: SignatureKey, alg: SignatureAlgorithm, signature: BufferSource, data: BufferSource): Promise<boolean> => {
   const algorithm = getKeyAlgorithm(alg)
   const cryptoKey = await importPublicKey(publicKey, algorithm)
   return await crypto.subtle.verify(algorithm, cryptoKey, signature, data)
 }
 
-function pemToBinary(pem: string): Uint8Array<ArrayBuffer> {
+const pemToBinary = (pem: string): Uint8Array<ArrayBuffer> => {
   return decodeBase64(pem.replace(/-+(BEGIN|END).*?-+/g, '').replace(/\s/g, ''))
 }
 
-async function importPrivateKey(key: SignatureKey, alg: KeyImporterAlgorithm): Promise<CryptoKey> {
+const importPrivateKey = async (key: SignatureKey, alg: KeyImporterAlgorithm): Promise<CryptoKey> => {
   if (!crypto.subtle || !crypto.subtle.importKey) {
     throw new Error('`crypto.subtle.importKey` is undefined. JWT auth middleware requires it.')
   }
@@ -75,7 +70,7 @@ async function importPrivateKey(key: SignatureKey, alg: KeyImporterAlgorithm): P
   return await crypto.subtle.importKey('raw', utf8Encoder.encode(key), alg, false, usages)
 }
 
-async function importPublicKey(key: SignatureKey, alg: KeyImporterAlgorithm): Promise<CryptoKey> {
+const importPublicKey = async (key: SignatureKey, alg: KeyImporterAlgorithm): Promise<CryptoKey> => {
   if (!crypto.subtle || !crypto.subtle.importKey) {
     throw new Error('`crypto.subtle.importKey` is undefined. JWT auth middleware requires it.')
   }
@@ -105,7 +100,8 @@ async function importPublicKey(key: SignatureKey, alg: KeyImporterAlgorithm): Pr
 }
 
 // https://datatracker.ietf.org/doc/html/rfc7517
-async function exportPublicJwkFrom(privateKey: CryptoKey): Promise<JsonWebKey> {
+// https://datatracker.ietf.org/doc/html/rfc7517
+const exportPublicJwkFrom = async (privateKey: CryptoKey): Promise<JsonWebKey> => {
   if (privateKey.type !== 'private') {
     throw new Error(`unexpected key type: ${privateKey.type}`)
   }
@@ -119,7 +115,7 @@ async function exportPublicJwkFrom(privateKey: CryptoKey): Promise<JsonWebKey> {
   return { kty, alg, e, n, crv, x, y, key_ops: [CryptoKeyUsage.Verify] }
 }
 
-function getKeyAlgorithm(name: SignatureAlgorithm): KeyAlgorithm {
+const getKeyAlgorithm = (name: SignatureAlgorithm): KeyAlgorithm => {
   switch (name) {
     case 'HS256':
       return {
@@ -223,7 +219,7 @@ function getKeyAlgorithm(name: SignatureAlgorithm): KeyAlgorithm {
   }
 }
 
-function isCryptoKey(key: SignatureKey): key is CryptoKey {
+const isCryptoKey = (key: SignatureKey): key is CryptoKey => {
   const runtime = getRuntimeKey()
   // @ts-expect-error CryptoKey hasn't exported to global in node v18
   if (runtime === 'node' && !!crypto.webcrypto) {

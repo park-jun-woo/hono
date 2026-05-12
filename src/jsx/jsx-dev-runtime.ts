@@ -1,3 +1,5 @@
+//ff:func feature=jsx type=model control=sequence
+//ff:what Jsx dev runtime
 /**
  * @module
  * This module provides Hono's JSX dev runtime.

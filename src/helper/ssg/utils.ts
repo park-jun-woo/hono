@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Utils
 import type { Hono } from '../../hono'
 import { METHOD_NAME_ALL } from '../../router'
 import type { Env, RouterRoute } from '../../types'

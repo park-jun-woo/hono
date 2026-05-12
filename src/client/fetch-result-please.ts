@@ -1,3 +1,6 @@
+//ff:func feature=client type=model control=sequence
+//ff:type feature=client type=model
+//ff:what Fetch result please
 /**
  * @description This file is a modified version of `fetch-result-please` (`ofetch`), minimalized and adapted to Hono's custom needs.
  *
@@ -77,7 +80,7 @@ export class DetailedError extends Error {
 // This is used to match the content-type header for 'json'
 const jsonRegex = /^application\/(?:[\w!#$%&*.^`~-]*\+)?json(?:;.+)?$/i
 
-function detectResponseType(response: Response): 'json' | 'text' {
+const detectResponseType = (response: Response): 'json' | 'text' => {
   const _contentType = response.headers.get('content-type')
 
   if (!_contentType) {

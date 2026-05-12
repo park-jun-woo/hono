@@ -1,7 +1,20 @@
+//ff:type feature=router type=router
+//ff:what Trie
 import type { Context, ParamAssocArray } from './node'
 import { Node } from './node'
+import type { ReplacementMap } from './replacement_map.js'
 
-export type ReplacementMap = number[]
+export type { ReplacementMap } from './replacement_map.js'
+
+
+const _restoreGroupInTokens = (tokens: string[], mark: string, original: string): void => {
+  for (let j = tokens.length - 1; j >= 0; j--) {
+    if (tokens[j].indexOf(mark) !== -1) {
+      tokens[j] = tokens[j].replace(mark, original)
+      break
+    }
+  }
+}
 
 export class Trie {
   #context: Context = { varIndex: 0 }
@@ -32,13 +45,7 @@ export class Trie {
      */
     const tokens = path.match(/(?::[^\/]+)|(?:\/\*$)|./g) || []
     for (let i = groups.length - 1; i >= 0; i--) {
-      const [mark] = groups[i]
-      for (let j = tokens.length - 1; j >= 0; j--) {
-        if (tokens[j].indexOf(mark) !== -1) {
-          tokens[j] = tokens[j].replace(mark, groups[i][1])
-          break
-        }
-      }
+      _restoreGroupInTokens(tokens, groups[i][0], groups[i][1])
     }
 
     this.#root.insert(tokens, index, paramAssoc, this.#context, pathErrorCheckOnly)

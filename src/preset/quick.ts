@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Quick
 /**
  * @module
  * The preset that uses `LinearRouter`.

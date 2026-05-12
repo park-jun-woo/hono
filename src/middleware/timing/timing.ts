@@ -1,3 +1,6 @@
+//ff:func feature=middleware type=handler control=sequence
+//ff:type feature=middleware type=model
+//ff:what Timing
 /**
  * @module
  * Server-Timing Middleware for Hono.
@@ -6,26 +9,12 @@
 import type { Context } from '../../context'
 import type { MiddlewareHandler } from '../../types'
 import '../../context'
+import type { Timer } from './timer.js'
+import type { TimingOptions } from './timing_options.js'
 
-export type TimingVariables = {
-  metric?: {
-    headers: string[]
-    timers: Map<string, Timer>
-  }
-}
-
-interface Timer {
-  description?: string
-  start: number
-}
-
-interface TimingOptions {
-  total?: boolean
-  enabled?: boolean | ((c: Context) => boolean)
-  totalDescription?: string
-  autoEnd?: boolean
-  crossOrigin?: boolean | string | ((c: Context) => boolean | string)
-}
+export type { TimingVariables } from './timing_variables.js'
+export type { Timer } from './timer.js'
+export type { TimingOptions } from './timing_options.js'
 
 const getTime = (): number => {
   try {

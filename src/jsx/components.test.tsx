@@ -1,3 +1,5 @@
+//ff:func feature=jsx type=util control=sequence
+//ff:what Components test
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /** @jsxImportSource ./ */
 import { JSDOM } from 'jsdom'
@@ -10,7 +12,7 @@ function resolveCallback(template: string | HtmlEscapedString) {
   return rawResolveCallback(template, HtmlEscapedCallbackPhase.Stream, false, {})
 }
 
-function replacementResult(html: string) {
+const replacementResult = (html: string) => {
   const document = new JSDOM(html, { runScripts: 'dangerously' }).window.document
   document.querySelectorAll('template, script').forEach((e) => e.remove())
   return document.body.innerHTML

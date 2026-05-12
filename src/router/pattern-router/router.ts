@@ -1,7 +1,10 @@
+//ff:type feature=router type=router
+//ff:what Router
 import type { Params, Result, Router } from '../../router'
 import { METHOD_NAME_ALL, UnsupportedPathError } from '../../router'
+import type { Route } from './route.js'
 
-type Route<T> = [RegExp, string, T] // [pattern, method, handler]
+export type { Route } from './route.js'
 
 const emptyParams = Object.create(null)
 
@@ -47,11 +50,12 @@ export class PatternRouter<T> implements Router<T> {
     for (let i = 0, len = this.#routes.length; i < len; i++) {
       const [pattern, routeMethod, handler] = this.#routes[i]
 
-      if (routeMethod === method || routeMethod === METHOD_NAME_ALL) {
-        const match = pattern.exec(path)
-        if (match) {
-          handlers.push([handler, match.groups || emptyParams])
-        }
+      if (routeMethod !== method && routeMethod !== METHOD_NAME_ALL) {
+        continue
+      }
+      const match = pattern.exec(path)
+      if (match) {
+        handlers.push([handler, match.groups || emptyParams])
       }
     }
 

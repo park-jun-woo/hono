@@ -1,24 +1,24 @@
+//ff:type feature=jsx type=model
+//ff:what Index
 import type { JSX } from '../base'
 import { DOM_STASH } from '../constants'
 import { buildDataStack, update } from '../dom/render'
 import type { Context, Node, NodeObject, PendingType, UpdateHook } from '../dom/render'
+import type { UseDeferredValue } from './use_deferred_value.js'
+import type { UpdateStateFunction } from './update_state_function.js'
+import type { UseStateType } from './use_state_type.js'
+import type { EffectData } from './effect_data.js'
 
-type UpdateStateFunction<T> = (newState: T | ((currentState: T) => T)) => void
+export type { UpdateStateFunction } from './update_state_function.js'
+export type { EffectData } from './effect_data.js'
+export type { UseDeferredValue } from './use_deferred_value.js'
+export type { UseStateType } from './use_state_type.js'
 
 const STASH_SATE = 0
 export const STASH_EFFECT = 1
 const STASH_CALLBACK = 2
 const STASH_MEMO = 3
 const STASH_REF = 4
-
-export type EffectData = [
-  readonly unknown[] | undefined, // deps
-  (() => void | (() => void)) | undefined, // layout effect
-  (() => void) | undefined, // cleanup
-  (() => void) | undefined, // effect
-  (() => void) | undefined, // insertion effect
-]
-
 const resolvedPromiseValueMap: WeakMap<Promise<unknown>, unknown> = new WeakMap<
   Promise<unknown>,
   unknown
@@ -153,8 +153,6 @@ export const useTransition = (): [boolean, (callback: () => void | Promise<void>
   const [context] = buildData
   return [context[0] === 2, startTransitionLocalHook]
 }
-
-type UseDeferredValue = <T>(value: T, initialValue?: T) => T
 export const useDeferredValue: UseDeferredValue = <T>(value: T, ...rest: [T | undefined]): T => {
   const [values, setValues] = useState<[T, T]>(
     (rest.length ? [rest[0], rest[0]] : [value, value]) as [T, T]
@@ -173,11 +171,6 @@ export const useDeferredValue: UseDeferredValue = <T>(value: T, ...rest: [T | un
   pendingStack.pop()
 
   return values[0]
-}
-
-type UseStateType = {
-  <T>(initialState: T | (() => T)): [T, UpdateStateFunction<T>]
-  <T = undefined>(): [T | undefined, UpdateStateFunction<T | undefined>]
 }
 export const useState: UseStateType = <T>(
   initialState?: T | (() => T)

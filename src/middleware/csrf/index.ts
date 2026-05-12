@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * CSRF Protection Middleware for Hono.
@@ -6,19 +8,17 @@
 import type { Context } from '../../context'
 import { HTTPException } from '../../http-exception'
 import type { MiddlewareHandler } from '../../types'
+import type { SecFetchSite } from './sec_fetch_site.js'
+import type { IsAllowedOriginHandler } from './is_allowed_origin_handler.js'
+import type { IsAllowedSecFetchSiteHandler } from './is_allowed_sec_fetch_site_handler.js'
 
-type IsAllowedOriginHandler = (origin: string, context: Context) => boolean | Promise<boolean>
+export type { IsAllowedOriginHandler } from './is_allowed_origin_handler.js'
+export type { SecFetchSite } from './sec_fetch_site.js'
+export type { IsAllowedSecFetchSiteHandler } from './is_allowed_sec_fetch_site_handler.js'
 
-const secFetchSiteValues = ['same-origin', 'same-site', 'none', 'cross-site'] as const
-type SecFetchSite = (typeof secFetchSiteValues)[number]
-
+export const secFetchSiteValues = ['same-origin', 'same-site', 'none', 'cross-site'] as const
 const isSecFetchSite = (value: string): value is SecFetchSite =>
   (secFetchSiteValues as readonly string[]).includes(value)
-
-type IsAllowedSecFetchSiteHandler = (
-  secFetchSite: SecFetchSite,
-  context: Context
-) => boolean | Promise<boolean>
 
 interface CSRFOptions {
   origin?: string | string[] | IsAllowedOriginHandler

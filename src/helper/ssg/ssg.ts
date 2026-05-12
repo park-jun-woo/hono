@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Ssg
 import { replaceUrlParam } from '../../client/utils'
 import type { Hono } from '../../hono'
 import type { Env, Schema } from '../../types'
@@ -13,6 +15,23 @@ import {
   isDynamicRoute,
   joinPaths,
 } from './utils'
+import type { BeforeRequestHook } from './before_request_hook.js'
+import type { AfterResponseHook } from './after_response_hook.js'
+import type { AfterGenerateHook } from './after_generate_hook.js'
+import type { FileSystemModule } from './file_system_module.js'
+import type { ToSSGResult } from './to_ssg_result.js'
+import type { ToSSGOptions } from './to_ssg_options.js'
+import type { ToSSGInterface } from './to_ssg_interface.js'
+
+export type { BeforeRequestHook } from './before_request_hook.js'
+export type { AfterResponseHook } from './after_response_hook.js'
+export type { AfterGenerateHook } from './after_generate_hook.js'
+export type { FileSystemModule } from './file_system_module.js'
+export type { ToSSGResult } from './to_ssg_result.js'
+export type { SSGPlugin } from './ssg_plugin.js'
+export type { ToSSGOptions } from './to_ssg_options.js'
+export type { ToSSGInterface } from './to_ssg_interface.js'
+
 
 const DEFAULT_CONCURRENCY = 2 // default concurrency for ssg
 
@@ -25,28 +44,6 @@ const DEFAULT_CONCURRENCY = 2 // default concurrency for ssg
 const DEFAULT_CONTENT_TYPE = 'text/plain'
 
 export const DEFAULT_OUTPUT_DIR = './static'
-
-/**
- * @experimental
- * `FileSystemModule` is an experimental feature.
- * The API might be changed.
- */
-export interface FileSystemModule {
-  writeFile(path: string, data: string | Uint8Array): Promise<void>
-  mkdir(path: string, options: { recursive: boolean }): Promise<void | string>
-}
-
-/**
- * @experimental
- * `ToSSGResult` is an experimental feature.
- * The API might be changed.
- */
-export interface ToSSGResult {
-  success: boolean
-  files: string[]
-  error?: Error
-}
-
 const generateFilePath = (
   routePath: string,
   outDir: string,
@@ -106,15 +103,6 @@ const determineExtension = (
   }
   return getExtension(mimeType) || 'html'
 }
-
-export type BeforeRequestHook = (req: Request) => Request | false | Promise<Request | false>
-export type AfterResponseHook = (res: Response) => Response | false | Promise<Response | false>
-export type AfterGenerateHook = (
-  result: ToSSGResult,
-  fsModule: FileSystemModule,
-  options?: ToSSGOptions
-) => void | Promise<void>
-
 export const combineBeforeRequestHooks = (
   hooks: BeforeRequestHook | BeforeRequestHook[]
 ): BeforeRequestHook => {
@@ -171,32 +159,6 @@ export const combineAfterGenerateHooks = (
     }
   }
 }
-
-export interface SSGPlugin {
-  beforeRequestHook?: BeforeRequestHook | BeforeRequestHook[]
-  afterResponseHook?: AfterResponseHook | AfterResponseHook[]
-  afterGenerateHook?: AfterGenerateHook | AfterGenerateHook[]
-}
-
-export interface ToSSGOptions {
-  dir?: string
-  /**
-   * @deprecated Use plugins[].beforeRequestHook instead.
-   */
-  beforeRequestHook?: BeforeRequestHook | BeforeRequestHook[]
-  /**
-   * @deprecated Use plugins[].afterResponseHook instead.
-   */
-  afterResponseHook?: AfterResponseHook | AfterResponseHook[]
-  /**
-   * @deprecated Use plugins[].afterGenerateHook instead.
-   */
-  afterGenerateHook?: AfterGenerateHook | AfterGenerateHook[]
-  concurrency?: number
-  extensionMap?: Record<string, string>
-  plugins?: SSGPlugin[]
-}
-
 /**
  * @experimental
  * `fetchRoutesContent` is an experimental feature.
@@ -331,20 +293,6 @@ export const saveContentToFile = async (
     await fsModule.writeFile(filePath, new Uint8Array(content))
   }
   return filePath
-}
-
-/**
- * @experimental
- * `ToSSGInterface` is an experimental feature.
- * The API might be changed.
- */
-export interface ToSSGInterface {
-  (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    app: Hono<any, any, any>,
-    fsModule: FileSystemModule,
-    options?: ToSSGOptions
-  ): Promise<ToSSGResult>
 }
 
 /**

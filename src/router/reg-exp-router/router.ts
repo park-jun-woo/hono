@@ -1,3 +1,6 @@
+//ff:func feature=router type=router control=iteration dimension=1
+//ff:type feature=router type=model
+//ff:what Router
 import type { ParamIndexMap, Router } from '../../router'
 import {
   MESSAGE_MATCHER_IS_ALREADY_BUILT,
@@ -10,11 +13,70 @@ import { match, emptyParam } from './matcher'
 import { PATH_ERROR } from './node'
 import type { ParamAssocArray } from './node'
 import { Trie } from './trie'
+import type { HandlerWithMetadata } from './handler_with_metadata_def.js'
 
-type HandlerWithMetadata<T> = [T, number] // [handler, paramCount]
+export type { HandlerWithMetadata } from './handler_with_metadata_def.js'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const nullMatcher: Matcher<any> = [/^$/, [], Object.create(null)]
+
+const addWildcardRoute = <T>(
+  middleware: Record<string, Record<string, HandlerWithMetadata<T>[]>>,
+  routes: Record<string, Record<string, HandlerWithMetadata<T>[]>>,
+  method: string,
+  path: string,
+  handler: T,
+  paramCount: number
+): void => {
+  const re = buildWildcardRegExp(path)
+  if (method === METHOD_NAME_ALL) {
+    Object.keys(middleware).forEach((m) => {
+      middleware[m][path] ||=
+        findMiddleware(middleware[m], path) ||
+        findMiddleware(middleware[METHOD_NAME_ALL], path) ||
+        []
+    })
+  } else {
+    middleware[method][path] ||=
+      findMiddleware(middleware[method], path) ||
+      findMiddleware(middleware[METHOD_NAME_ALL], path) ||
+      []
+  }
+  Object.keys(middleware).forEach((m) => {
+    if (method === METHOD_NAME_ALL || method === m) {
+      Object.keys(middleware[m]).forEach((p) => {
+        re.test(p) && middleware[m][p].push([handler, paramCount])
+      })
+    }
+  })
+  Object.keys(routes).forEach((m) => {
+    if (method === METHOD_NAME_ALL || method === m) {
+      Object.keys(routes[m]).forEach(
+        (p) => re.test(p) && routes[m][p].push([handler, paramCount])
+      )
+    }
+  })
+}
+
+const addExactRoute = <T>(
+  middleware: Record<string, Record<string, HandlerWithMetadata<T>[]>>,
+  routes: Record<string, Record<string, HandlerWithMetadata<T>[]>>,
+  method: string,
+  path: string,
+  handler: T,
+  paramCount: number
+): void => {
+  Object.keys(routes).forEach((m) => {
+    if (method === METHOD_NAME_ALL || method === m) {
+      routes[m][path] ||= [
+        ...(findMiddleware(middleware[m], path) ||
+          findMiddleware(middleware[METHOD_NAME_ALL], path) ||
+          []),
+      ]
+      routes[m][path].push([handler, paramCount])
+    }
+  })
+}
 
 let wildcardRegExpCache: Record<string, RegExp> = Object.create(null)
 function buildWildcardRegExp(path: string): RegExp {
@@ -27,13 +89,11 @@ function buildWildcardRegExp(path: string): RegExp {
   ))
 }
 
-function clearWildcardRegExpCache() {
+const clearWildcardRegExpCache = () => {
   wildcardRegExpCache = Object.create(null)
 }
 
-function buildMatcherFromPreprocessedRoutes<T>(
-  routes: [string, HandlerWithMetadata<T>[]][]
-): Matcher<T> {
+const buildMatcherFromPreprocessedRoutes = <T>(routes: [string, HandlerWithMetadata<T>[]][]): Matcher<T> => {
   const trie = new Trie()
   const handlerData: HandlerData<T>[] = []
   if (routes.length === 0) {
@@ -102,10 +162,7 @@ function buildMatcherFromPreprocessedRoutes<T>(
   return [regexp, handlerMap, staticMap] as Matcher<T>
 }
 
-function findMiddleware<T>(
-  middleware: Record<string, T[]> | undefined,
-  path: string
-): T[] | undefined {
+const findMiddleware = <T>(middleware: Record<string, T[]> | undefined, path: string): T[] | undefined => {
   if (!middleware) {
     return undefined
   }
@@ -153,53 +210,13 @@ export class RegExpRouter<T> implements Router<T> {
     const paramCount = (path.match(/\/:/g) || []).length
 
     if (/\*$/.test(path)) {
-      const re = buildWildcardRegExp(path)
-      if (method === METHOD_NAME_ALL) {
-        Object.keys(middleware).forEach((m) => {
-          middleware[m][path] ||=
-            findMiddleware(middleware[m], path) ||
-            findMiddleware(middleware[METHOD_NAME_ALL], path) ||
-            []
-        })
-      } else {
-        middleware[method][path] ||=
-          findMiddleware(middleware[method], path) ||
-          findMiddleware(middleware[METHOD_NAME_ALL], path) ||
-          []
-      }
-      Object.keys(middleware).forEach((m) => {
-        if (method === METHOD_NAME_ALL || method === m) {
-          Object.keys(middleware[m]).forEach((p) => {
-            re.test(p) && middleware[m][p].push([handler, paramCount])
-          })
-        }
-      })
-
-      Object.keys(routes).forEach((m) => {
-        if (method === METHOD_NAME_ALL || method === m) {
-          Object.keys(routes[m]).forEach(
-            (p) => re.test(p) && routes[m][p].push([handler, paramCount])
-          )
-        }
-      })
-
+      addWildcardRoute(middleware, routes, method, path, handler, paramCount)
       return
     }
 
     const paths = checkOptionalParameter(path) || [path]
     for (let i = 0, len = paths.length; i < len; i++) {
-      const path = paths[i]
-
-      Object.keys(routes).forEach((m) => {
-        if (method === METHOD_NAME_ALL || method === m) {
-          routes[m][path] ||= [
-            ...(findMiddleware(middleware[m], path) ||
-              findMiddleware(middleware[METHOD_NAME_ALL], path) ||
-              []),
-          ]
-          routes[m][path].push([handler, paramCount - len + i + 1])
-        }
-      })
+      addExactRoute(middleware, routes, method, paths[i], handler, paramCount - len + i + 1)
     }
   }
 

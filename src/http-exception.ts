@@ -1,21 +1,15 @@
+//ff:type feature=core type=model
+//ff:what Http exception
 /**
  * @module
  * This module provides the `HTTPException` class.
  */
 
 import type { ContentfulStatusCode } from './utils/http-status'
+import type { HTTPExceptionOptions } from './http_exception_options.js'
 
-/**
- * Options for creating an `HTTPException`.
- * @property res - Optional response object to use.
- * @property message - Optional custom error message.
- * @property cause - Optional cause of the error.
- */
-type HTTPExceptionOptions = {
-  res?: Response
-  message?: string
-  cause?: unknown
-}
+export type { HTTPExceptionOptions } from './http_exception_options.js'
+
 
 /**
  * `HTTPException` must be used when a fatal error such as authentication failure occurs.

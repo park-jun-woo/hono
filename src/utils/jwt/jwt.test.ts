@@ -1,3 +1,5 @@
+//ff:func feature=utils type=util control=sequence
+//ff:what Jwt test
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { vi } from 'vitest'
 import { encodeBase64, encodeBase64Url } from '../encode'
@@ -1522,17 +1524,17 @@ async function exportPEMPrivateKey(key: CryptoKey): Promise<string> {
   return pem
 }
 
-async function exportPEMPublicKey(key: CryptoKey): Promise<string> {
+const exportPEMPublicKey = async (key: CryptoKey): Promise<string> => {
   const exported = await crypto.subtle.exportKey('spki', key)
   const pem = `-----BEGIN PUBLIC KEY-----\n${encodeBase64(exported)}\n-----END PUBLIC KEY-----`
   return pem
 }
 
-async function exportJWK(key: CryptoKey): Promise<JsonWebKey> {
+const exportJWK = async (key: CryptoKey): Promise<JsonWebKey> => {
   return await crypto.subtle.exportKey('jwk', key)
 }
 
-async function generateRSAKey(hash: string): Promise<CryptoKeyPair> {
+const generateRSAKey = async (hash: string): Promise<CryptoKeyPair> => {
   return await crypto.subtle.generateKey(
     {
       hash,
@@ -1545,7 +1547,7 @@ async function generateRSAKey(hash: string): Promise<CryptoKeyPair> {
   )
 }
 
-async function generateRSAPSSKey(hash: string): Promise<CryptoKeyPair> {
+const generateRSAPSSKey = async (hash: string): Promise<CryptoKeyPair> => {
   return await crypto.subtle.generateKey(
     {
       hash,
@@ -1558,7 +1560,7 @@ async function generateRSAPSSKey(hash: string): Promise<CryptoKeyPair> {
   )
 }
 
-async function generateECDSAKey(namedCurve: string): Promise<CryptoKeyPair> {
+const generateECDSAKey = async (namedCurve: string): Promise<CryptoKeyPair> => {
   return await crypto.subtle.generateKey(
     {
       name: 'ECDSA',
@@ -1569,7 +1571,7 @@ async function generateECDSAKey(namedCurve: string): Promise<CryptoKeyPair> {
   )
 }
 
-async function generateEd25519Key(): Promise<CryptoKeyPair> {
+const generateEd25519Key = async (): Promise<CryptoKeyPair> => {
   return await crypto.subtle.generateKey(
     {
       name: 'Ed25519',

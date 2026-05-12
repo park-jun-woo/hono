@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Common.case test
 /** @jsxImportSource ../../jsx */
 import type {
   Style as StyleComponent,

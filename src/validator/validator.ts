@@ -1,3 +1,5 @@
+//ff:type feature=validator type=model
+//ff:what Validator
 import type { Context } from '../context'
 import { getCookie } from '../helper/cookie'
 import { HTTPException } from '../http-exception'
@@ -5,44 +7,17 @@ import type { Env, MiddlewareHandler, TypedResponse, ValidationTargets, FormValu
 import type { BodyData } from '../utils/body'
 import { bufferToFormData } from '../utils/buffer'
 import type { InferInput } from './utils'
+import type { ValidationTargetByMethod } from './validation_target_by_method.js'
+import type { ExtractValidationResponse } from './extract_validation_response.js'
 
-type ValidationTargetKeysWithBody = 'form' | 'json'
-type ValidationTargetByMethod<M> = M extends 'get' | 'head' // GET and HEAD request must not have a body content.
-  ? Exclude<keyof ValidationTargets, ValidationTargetKeysWithBody>
-  : keyof ValidationTargets
-
-export type ValidationFunction<
-  InputType,
-  OutputType,
-  E extends Env = {},
-  P extends string = string,
-> = (
-  value: InputType,
-  c: Context<E, P>
-) => OutputType | TypedResponse | Promise<OutputType> | Promise<TypedResponse>
+export type { ValidationTargetKeysWithBody } from './validation_target_keys_with_body.js'
+export type { ValidationTargetByMethod } from './validation_target_by_method.js'
+export type { ValidationFunction } from './validation_function.js'
+export type { ExtractValidationResponse } from './extract_validation_response.js'
 
 const jsonRegex = /^application\/([a-z-\.]+\+)?json(;\s*[a-zA-Z0-9\-]+\=([^;]+))*$/
 const multipartRegex = /^multipart\/form-data(;\s?boundary=[a-zA-Z0-9'"()+_,\-./:=?]+)?$/
 const urlencodedRegex = /^application\/x-www-form-urlencoded(;\s*[a-zA-Z0-9\-]+\=([^;]+))*$/
-
-export type ExtractValidationResponse<VF> = VF extends (value: any, c: any) => infer R
-  ? R extends Promise<infer PR>
-    ? PR extends TypedResponse<infer T, infer S, infer F>
-      ? TypedResponse<T, S, F>
-      : PR extends Response
-        ? PR
-        : PR extends undefined
-          ? never // undefined → never
-          : never // anything else → never
-    : R extends TypedResponse<infer T, infer S, infer F>
-      ? TypedResponse<T, S, F>
-      : R extends Response
-        ? R
-        : R extends undefined
-          ? never // undefined → never
-          : never // anything else → never
-  : never // Can't extract → never
-
 export const validator = <
   InputType,
   P extends string,

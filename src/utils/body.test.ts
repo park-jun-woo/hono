@@ -1,3 +1,5 @@
+//ff:type feature=utils type=model
+//ff:what Body test
 import { parseBody } from './body'
 import type { BodyData } from './body'
 

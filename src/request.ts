@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Request
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HTTPException } from './http-exception'
 import { GET_MATCH_RESULT } from './request/constants'
@@ -16,20 +18,14 @@ import type { BodyData, ParseBodyOptions } from './utils/body'
 import type { CustomHeader, RequestHeader } from './utils/headers'
 import type { Simplify, UnionToIntersection } from './utils/types'
 import { decodeURIComponent_, getQueryParam, getQueryParams, tryDecode } from './utils/url'
+import type { Body } from './body.js'
+import type { BodyCache } from './body_cache.js'
+import type { RequiredRequestInit } from './required_request_init.js'
 
-type Body = {
-  json: any
-  text: string
-  arrayBuffer: ArrayBuffer
-  blob: Blob
-  formData: FormData
-}
-type BodyCache = Partial<Body>
-
-type OptionalRequestInitProperties = 'window' | 'priority'
-type RequiredRequestInit = Required<Omit<RequestInit, OptionalRequestInitProperties>> & {
-  [Key in OptionalRequestInitProperties]?: RequestInit[Key]
-}
+export type { Body } from './body.js'
+export type { BodyCache } from './body_cache.js'
+export type { OptionalRequestInitProperties } from './optional_request_init_properties.js'
+export type { RequiredRequestInit } from './required_request_init.js'
 
 const tryDecodeURIComponent = (str: string) => tryDecode(str, decodeURIComponent_)
 

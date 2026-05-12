@@ -1,9 +1,14 @@
+//ff:func feature=router type=router control=sequence
+//ff:type feature=router type=model
+//ff:what Matcher
 import type { ParamIndexMap, Result, Router } from '../../router'
 import { METHOD_NAME_ALL } from '../../router'
+import type { Matcher } from './matcher_def.js'
 
-export type HandlerData<T> = [T, ParamIndexMap][]
-export type StaticMap<T> = Record<string, Result<T>>
-export type Matcher<T> = [RegExp, HandlerData<T>[], StaticMap<T>]
+export type { HandlerData } from './handler_data.js'
+export type { StaticMap } from './static_map.js'
+export type { Matcher } from './matcher_def.js'
+
 export type MatcherMap<T> = Record<string, Matcher<T> | null>
 
 export const emptyParam: string[] = []

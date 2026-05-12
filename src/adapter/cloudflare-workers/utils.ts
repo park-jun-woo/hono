@@ -1,3 +1,5 @@
+//ff:type feature=adapter type=adapter
+//ff:what Utils
 // __STATIC_CONTENT is KVNamespace
 declare const __STATIC_CONTENT: unknown
 declare const __STATIC_CONTENT_MANIFEST: string

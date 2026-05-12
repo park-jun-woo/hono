@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Context
 import { raw } from '../helper/html'
 import type { HtmlEscapedString } from '../utils/html'
 import { JSXFragmentNode } from './base'

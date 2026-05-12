@@ -1,3 +1,6 @@
+//ff:func feature=adapter type=adapter control=sequence
+//ff:type feature=adapter type=model
+//ff:what Handler test
 import { getCookie } from '../../helper/cookie'
 import { Hono } from '../../hono'
 import { HTTPException } from '../../http-exception'

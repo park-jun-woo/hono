@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * JSX Renderer Middleware for Hono.
@@ -11,20 +13,15 @@ import type { FC, Context as JSXContext, JSXNode, PropsWithChildren } from '../.
 import { renderToReadableStream } from '../../jsx/streaming'
 import type { Env, Input, MiddlewareHandler } from '../../types'
 import type { HtmlEscapedString } from '../../utils/html'
+import type { RendererOptions } from './renderer_options.js'
+import type { Component } from './component.js'
+
+export type { RendererOptions } from './renderer_options.js'
+export type { Component } from './component.js'
+
 
 export const RequestContext: JSXContext<Context<any, any, {}> | null> =
   createContext<Context | null>(null)
-
-type RendererOptions = {
-  docType?: boolean | string
-  stream?: boolean | Record<string, string>
-}
-
-type Component = (
-  props: PropsForRenderer & { Layout: FC },
-  c: Context
-) => HtmlEscapedString | Promise<HtmlEscapedString>
-
 type ComponentWithChildren = (
   props: PropsWithChildren<PropsForRenderer & { Layout: FC }>,
   c: Context

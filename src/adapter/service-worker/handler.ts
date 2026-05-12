@@ -1,3 +1,5 @@
+//ff:type feature=adapter type=adapter
+//ff:what Handler
 /**
  * Handler for Service Worker
  * @module
@@ -6,8 +8,10 @@
 import type { Hono } from '../../hono'
 import type { Env, Schema } from '../../types'
 import type { FetchEvent } from './types'
+import type { Handler } from './handler_def.js'
 
-type Handler = (evt: FetchEvent) => void
+export type { Handler } from './handler_def.js'
+
 export type HandleOptions = {
   fetch?: typeof fetch
 }

@@ -1,14 +1,13 @@
+//ff:type feature=helper type=model
+//ff:what Sse
 import type { Context } from '../../context'
 import { HtmlEscapedCallbackPhase, resolveCallback } from '../../utils/html'
 import { StreamingApi } from '../../utils/stream'
 import { isOldBunVersion } from './utils'
+import type { SSEMessage } from './sse_message.js'
 
-export interface SSEMessage {
-  data: string | Promise<string>
-  event?: string
-  id?: string
-  retry?: number
-}
+export type { SSEMessage } from './sse_message.js'
+
 
 export class SSEStreamingApi extends StreamingApi {
   constructor(writable: WritableStream, readable: ReadableStream) {

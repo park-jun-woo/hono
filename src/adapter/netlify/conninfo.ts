@@ -1,29 +1,10 @@
+//ff:type feature=adapter type=adapter
+//ff:what Conninfo
 import type { Context } from '../../context'
 import type { GetConnInfo } from '../../helper/conninfo'
+import type { NetlifyContext } from './netlify_context.js'
 
-/**
- * Netlify context type
- * @see https://docs.netlify.com/functions/api/
- */
-type NetlifyContext = {
-  ip?: string
-  geo?: {
-    city?: string
-    country?: {
-      code?: string
-      name?: string
-    }
-    subdivision?: {
-      code?: string
-      name?: string
-    }
-    latitude?: number
-    longitude?: number
-    timezone?: string
-    postalCode?: string
-  }
-  requestId?: string
-}
+export type { NetlifyContext } from './netlify_context.js'
 
 type Env = {
   Bindings: {

@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Index
 /**
  * @module
  * Testing Helper for Hono.

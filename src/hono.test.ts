@@ -1,3 +1,6 @@
+//ff:func feature=core type=model control=sequence
+//ff:type feature=core type=model
+//ff:what Hono test
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { expectTypeOf } from 'vitest'

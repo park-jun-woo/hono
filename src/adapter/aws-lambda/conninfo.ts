@@ -1,3 +1,5 @@
+//ff:type feature=adapter type=adapter
+//ff:what Conninfo
 import type { Context } from '../../context'
 import type { GetConnInfo } from '../../helper/conninfo'
 import type {
@@ -5,11 +7,9 @@ import type {
   ApiGatewayRequestContextV2,
   ALBRequestContext,
 } from './types'
+import type { LambdaRequestContext } from './lambda_request_context.js'
 
-type LambdaRequestContext =
-  | ApiGatewayRequestContext
-  | ApiGatewayRequestContextV2
-  | ALBRequestContext
+export type { LambdaRequestContext } from './lambda_request_context.js'
 
 type Env = {
   Bindings: {

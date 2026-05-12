@@ -1,3 +1,5 @@
+//ff:type feature=client type=util
+//ff:what Client test
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 /* eslint-disable @typescript-eslint/ban-ts-comment */

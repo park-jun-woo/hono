@@ -1,3 +1,5 @@
+//ff:type feature=jsx type=model
+//ff:what Render
 import type { Child, FC, JSXNode, Props, MemorableFC } from '../base'
 import { toArray } from '../children'
 import {
@@ -12,7 +14,31 @@ import { globalContexts as globalJSXContexts, useContext } from '../context'
 import type { EffectData } from '../hooks'
 import { STASH_EFFECT } from '../hooks'
 import { normalizeIntrinsicElementKey, styleObjectForEach } from '../utils'
-import { createContext } from './context' // import dom-specific versions
+import { createContext } from './context'
+import type { Node } from './node.js'
+import type { Context } from './context_def.js'
+import type { NodeString } from './node_string.js'
+import type { SupportedElement } from './supported_element.js'
+import type { HasRenderToDom } from './has_render_to_dom.js'
+import type { NodeObject } from './node_object.js'
+import type { Container } from './container.js'
+import type { LocalJSXContexts } from './local_jsx_contexts.js'
+import type { ErrorHandler } from './error_handler.js'
+import type { UpdateHook } from './update_hook.js'
+
+export type { HasRenderToDom } from './has_render_to_dom.js'
+export type { ErrorHandler } from './error_handler.js'
+export type { Container } from './container.js'
+export type { LocalJSXContexts } from './local_jsx_contexts.js'
+export type { SupportedElement } from './supported_element.js'
+export type { PreserveNodeType } from './preserve_node_type.js'
+export type { NodeObject } from './node_object.js'
+export type { NodeString } from './node_string.js'
+export type { Node } from './node.js'
+export type { PendingType } from './pending_type.js'
+export type { UpdateHook } from './update_hook.js'
+export type { Context } from './context_def.js'
+ // import dom-specific versions
 
 const HONO_PORTAL_ELEMENT = '_hp'
 
@@ -27,82 +53,7 @@ const nameSpaceMap: Record<string, string> = {
 } as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type HasRenderToDom = FC<any> & { [DOM_RENDERER]: FC<any> }
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type ErrorHandler = (error: any, retry: () => void) => Child | undefined
-
-type Container = HTMLElement | DocumentFragment
-type LocalJSXContexts = [JSXContext<unknown>, unknown][] | undefined
-type SupportedElement = HTMLElement | SVGElement | MathMLElement
-export type PreserveNodeType =
-  | 1 // preserve only self
-  | 2 // preserve self and children
-
-export type NodeObject = {
-  pP: Props | undefined // previous props
-  nN: Node | undefined // next node
-  vC: Node[] // virtual dom children
-  pC?: Node[] // previous virtual dom children
-  vR: Node[] // virtual dom children to remove
-  n?: string // namespace
-  f?: boolean // force build
-  s?: boolean // skip build and apply
-  c: Container | undefined // container
-  e: SupportedElement | Text | undefined // rendered element
-  p?: PreserveNodeType // preserve HTMLElement if it will be unmounted
-  a?: boolean // cancel apply() if true
-  o?: NodeObject // original node
-  [DOM_STASH]:
-    | [
-        number, // current hook index
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        any[][], // stash for hooks
-        LocalJSXContexts, // context
-        [Context, Function, NodeObject], // [context, error handler, node] for closest error boundary or suspense
-      ]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    | [number, any[][]]
-} & JSXNode
-type NodeString = {
-  t: string // text content
-  d: boolean // is dirty
-  s?: boolean // skip build and apply
-} & {
-  e?: Text
-  // like a NodeObject
-  vC: undefined
-  nN: undefined
-  p?: true
-  // from JSXNode
-  key: undefined
-  tag: undefined
-}
-export type Node = NodeString | NodeObject
-
-export type PendingType =
-  | 0 // no pending
-  | 1 // global
-  | 2 // hook
-export type UpdateHook = (
-  context: Context,
-  node: Node,
-  cb: (context: Context) => void
-) => Promise<void>
-export type Context =
-  | [
-      PendingType, // PendingType
-      boolean, // got an error
-      UpdateHook, // update hook
-      boolean, // is in view transition
-      boolean, // is in top level render
-      [Context, Function, NodeObject][], //  [context, error handler, node] stack for this context
-    ]
-  | [PendingType, boolean, UpdateHook, boolean]
-  | [PendingType, boolean, UpdateHook]
-  | [PendingType, boolean]
-  | [PendingType]
-  | []
-
 export const buildDataStack: [Context, Node][] = []
 
 const refCleanupMap: WeakMap<Element, () => void> = new WeakMap()
@@ -361,7 +312,7 @@ const removeNode = (node: Node): void => {
   }
 }
 
-const apply = (node: NodeObject, container: Container, isNew: boolean): void => {
+export const apply = (node: NodeObject, container: Container, isNew: boolean): void => {
   node.c = container
   applyNodeObject(node, container, isNew)
 }

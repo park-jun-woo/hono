@@ -1,3 +1,5 @@
+//ff:type feature=validator type=model
+//ff:what Validator test
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as z from 'zod'
 import type { Context } from '../context'

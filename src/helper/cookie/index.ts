@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Index
 /**
  * @module
  * Cookie Helper for Hono.
@@ -6,12 +8,10 @@
 import type { Context } from '../../context'
 import { parse, parseSigned, serialize, serializeSigned } from '../../utils/cookie'
 import type { Cookie, CookieOptions, CookiePrefixOptions, SignedCookie } from '../../utils/cookie'
+import type { GetCookie } from './get_cookie.js'
 
-interface GetCookie {
-  (c: Context, key: string): string | undefined
-  (c: Context): Cookie
-  (c: Context, key: string, prefixOptions?: CookiePrefixOptions): string | undefined
-}
+export type { GetCookie } from './get_cookie.js'
+
 
 interface GetSignedCookie {
   (c: Context, secret: string | BufferSource, key: string): Promise<string | undefined | false>

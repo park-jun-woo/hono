@@ -1,49 +1,17 @@
+//ff:type feature=validator type=model
+//ff:what Utils
 import type { FormValue, ParsedFormValue, ValidationTargets } from '../types'
 import type { UnionToIntersection } from '../utils/types'
+import type { SimplifyDeep } from './simplify_deep.js'
+import type { InferInputInner } from './infer_input_inner.js'
 
-/**
- * Checks if T is a literal union type (e.g., 'asc' | 'desc')
- * that should be preserved in input types.
- * Returns true for union literals, false for single literals or wide types.
- */
-export type IsLiteralUnion<T, Base> = [Exclude<T, undefined>] extends [Base]
-  ? [Exclude<T, undefined>] extends [UnionToIntersection<Exclude<T, undefined>>]
-    ? false
-    : true
-  : false
+export type { IsLiteralUnion } from './is_literal_union.js'
+export type { IsOptionalUnion } from './is_optional_union.js'
+export type { SimplifyDeep } from './simplify_deep.js'
+export type { InferInputInner } from './infer_input_inner.js'
 
 // Check if type is an optional union (T | undefined) but not unknown/any
-type IsOptionalUnion<T> = [unknown] extends [T]
-  ? false // unknown or any
-  : undefined extends T
-    ? true
-    : false
-
 // Helper to force TypeScript to expand type aliases
-type SimplifyDeep<T> = { [K in keyof T]: T[K] } & {}
-
-type InferInputInner<
-  Output,
-  Target extends keyof ValidationTargets,
-  T extends FormValue,
-> = SimplifyDeep<{
-  [K in keyof Output]: IsLiteralUnion<Output[K], string> extends true
-    ? Output[K]
-    : IsOptionalUnion<Output[K]> extends true
-      ? Output[K]
-      : Target extends 'form'
-        ? T | T[]
-        : Target extends 'query'
-          ? string | string[]
-          : Target extends 'param'
-            ? string
-            : Target extends 'header'
-              ? string
-              : Target extends 'cookie'
-                ? string
-                : unknown
-}>
-
 /**
  * Utility type to infer input types for validation targets.
  * Preserves literal union types (e.g., 'asc' | 'desc') while using

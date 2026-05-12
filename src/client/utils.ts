@@ -1,3 +1,5 @@
+//ff:func feature=client type=util control=iteration dimension=1
+//ff:what Utils
 import type {
   ClientErrorStatusCode,
   ContentfulStatusCode,
@@ -59,7 +61,7 @@ export const removeIndexString = (urlString: string) => {
   return urlString.replace(/\/index(?=\?|$)/, '')
 }
 
-function isObject(item: unknown): item is ObjectType {
+const isObject = (item: unknown): item is ObjectType => {
   return typeof item === 'object' && item !== null && !Array.isArray(item)
 }
 
@@ -89,9 +91,7 @@ export function deepMerge<T>(target: T, source: Record<string, unknown>): T {
  * @example const result = await parseResponse(client.posts.$get())
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function parseResponse<T extends ClientResponse<any>>(
-  fetchRes: T | Promise<T>
-): Promise<
+export const parseResponse = async <T extends ClientResponse<any>>(fetchRes: T | Promise<T>): Promise<
   FilterClientResponseByStatusCode<
     T,
     Exclude<ContentfulStatusCode, ClientErrorStatusCode | ServerErrorStatusCode> // Filter out the error responses
@@ -109,6 +109,6 @@ export async function parseResponse<T extends ClientResponse<any>>(
           ? RT
           : string
       : undefined
-> {
+> => {
   return fetchRP(fetchRes)
 }

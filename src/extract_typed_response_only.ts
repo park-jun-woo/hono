@@ -1,0 +1,17 @@
+//ff:type feature=core type=model
+//ff:what Extract typed response only
+import type { Context } from './context'
+import type { HonoBase } from './hono-base'
+import type { CustomHeader, RequestHeader } from './utils/headers'
+import type { StatusCode } from './utils/http-status'
+import type {
+  IfAnyThenEmptyObject,
+  IsAny,
+  JSONValue,
+  RemoveBlankRecord,
+  Simplify,
+  UnionToIntersection,
+} from './utils/types'
+import type { TypedResponse } from './typed_response.js'
+
+export type ExtractTypedResponseOnly<T> = T extends TypedResponse ? T : never

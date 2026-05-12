@@ -1,3 +1,16 @@
+//ff:type feature=utils type=model
+//ff:what Html
+
+import type { HtmlEscapedCallback } from './html_escaped_callback.js'
+import type { StringBuffer } from './string_buffer.js'
+import type { HtmlEscapedString } from './html_escaped_string.js'
+
+export type { HtmlEscapedCallbackOpts } from './html_escaped_callback_opts.js'
+export type { HtmlEscapedCallback } from './html_escaped_callback.js'
+export type { HtmlEscaped } from './html_escaped.js'
+export type { HtmlEscapedString } from './html_escaped_string.js'
+export type { StringBuffer } from './string_buffer.js'
+
 /**
  * @module
  * HTML utility.
@@ -8,33 +21,6 @@ export const HtmlEscapedCallbackPhase = {
   BeforeStream: 2,
   Stream: 3,
 } as const
-type HtmlEscapedCallbackOpts = {
-  buffer?: [string]
-  phase: (typeof HtmlEscapedCallbackPhase)[keyof typeof HtmlEscapedCallbackPhase]
-  context: Readonly<object> // An object unique to each JSX tree. This object is used as the WeakMap key.
-}
-export type HtmlEscapedCallback = (opts: HtmlEscapedCallbackOpts) => Promise<string> | undefined
-export type HtmlEscaped = {
-  isEscaped: true
-  callbacks?: HtmlEscapedCallback[]
-}
-export type HtmlEscapedString = string & HtmlEscaped
-
-/**
- * StringBuffer contains string and Promise<string> alternately
- * The length of the array will be odd, the odd numbered element will be a string,
- * and the even numbered element will be a Promise<string>.
- * When concatenating into a single string, it must be processed from the tail.
- * @example
- * [
- *   'framework.',
- *   Promise.resolve('ultra fast'),
- *   'a ',
- *   Promise.resolve('is '),
- *   'Hono',
- * ]
- */
-export type StringBuffer = (string | Promise<string>)[]
 export type StringBufferWithCallbacks = StringBuffer & { callbacks: HtmlEscapedCallback[] }
 
 export const raw = (value: unknown, callbacks?: HtmlEscapedCallback[]): HtmlEscapedString => {

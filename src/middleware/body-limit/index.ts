@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * Body Limit Middleware for Hono.
@@ -6,10 +8,12 @@
 import type { Context } from '../../context'
 import { HTTPException } from '../../http-exception'
 import type { MiddlewareHandler } from '../../types'
+import type { OnError } from './on_error.js'
+
+export type { OnError } from './on_error.js'
+
 
 const ERROR_MESSAGE = 'Payload Too Large'
-
-type OnError = (c: Context) => Response | Promise<Response>
 type BodyLimitOptions = {
   maxSize: number
   onError?: OnError

@@ -1,13 +1,17 @@
+//ff:func feature=router type=router control=sequence
+//ff:type feature=router type=model
+//ff:what Node
+
+import type { ParamAssocArray } from './param_assoc_array.js'
+import type { Context } from './context.js'
+
+export type { ParamAssocArray } from './param_assoc_array.js'
+export type { Context } from './context.js'
+
 const LABEL_REG_EXP_STR = '[^/]+'
 const ONLY_WILDCARD_REG_EXP_STR = '.*'
 const TAIL_WILDCARD_REG_EXP_STR = '(?:|/.*)'
 export const PATH_ERROR = Symbol()
-
-export type ParamAssocArray = [string, number][]
-export interface Context {
-  varIndex: number
-}
-
 const regExpMetaChars = new Set('.\\+*[^]$()')
 
 /**
@@ -78,58 +82,84 @@ export class Node {
 
     let node
     if (pattern) {
-      const name = pattern[1]
-      let regexpStr = pattern[2] || LABEL_REG_EXP_STR
-      if (name && pattern[2]) {
-        if (regexpStr === '.*') {
-          throw PATH_ERROR
-        }
-        regexpStr = regexpStr.replace(/^\((?!\?:)(?=[^)]+\)$)/, '(?:') // (a|b) => (?:a|b)
-        if (/\((?!\?:)/.test(regexpStr)) {
-          // prefix(?:a|b) is allowed, but prefix(a|b) is not
-          throw PATH_ERROR
-        }
-      }
-
-      node = this.#children[regexpStr]
+      node = this.#insertPattern(pattern, paramMap, context, pathErrorCheckOnly)
       if (!node) {
-        if (
-          Object.keys(this.#children).some(
-            (k) => k !== ONLY_WILDCARD_REG_EXP_STR && k !== TAIL_WILDCARD_REG_EXP_STR
-          )
-        ) {
-          throw PATH_ERROR
-        }
-        if (pathErrorCheckOnly) {
-          return
-        }
-        node = this.#children[regexpStr] = new Node()
-        if (name !== '') {
-          node.#varIndex = context.varIndex++
-        }
-      }
-      if (!pathErrorCheckOnly && name !== '') {
-        paramMap.push([name, node.#varIndex as number])
+        return
       }
     } else {
-      node = this.#children[token]
+      node = this.#insertLiteral(token, pathErrorCheckOnly)
       if (!node) {
-        if (
-          Object.keys(this.#children).some(
-            (k) =>
-              k.length > 1 && k !== ONLY_WILDCARD_REG_EXP_STR && k !== TAIL_WILDCARD_REG_EXP_STR
-          )
-        ) {
-          throw PATH_ERROR
-        }
-        if (pathErrorCheckOnly) {
-          return
-        }
-        node = this.#children[token] = new Node()
+        return
       }
     }
 
     node.insert(restTokens, index, paramMap, context, pathErrorCheckOnly)
+  }
+
+  #validateRegexpStr(regexpStr: string): string {
+    if (regexpStr === '.*') {
+      throw PATH_ERROR
+    }
+    regexpStr = regexpStr.replace(/^\((?!\?:)(?=[^)]+\)$)/, '(?:') // (a|b) => (?:a|b)
+    if (/\((?!\?:)/.test(regexpStr)) {
+      // prefix(?:a|b) is allowed, but prefix(a|b) is not
+      throw PATH_ERROR
+    }
+    return regexpStr
+  }
+
+  #insertPattern(
+    pattern: RegExpMatchArray,
+    paramMap: ParamAssocArray,
+    context: Context,
+    pathErrorCheckOnly: boolean
+  ): Node | undefined {
+    const name = pattern[1]
+    let regexpStr = pattern[2] || LABEL_REG_EXP_STR
+    if (name && pattern[2]) {
+      regexpStr = this.#validateRegexpStr(regexpStr)
+    }
+
+    let node = this.#children[regexpStr]
+    if (!node) {
+      if (
+        Object.keys(this.#children).some(
+          (k) => k !== ONLY_WILDCARD_REG_EXP_STR && k !== TAIL_WILDCARD_REG_EXP_STR
+        )
+      ) {
+        throw PATH_ERROR
+      }
+      if (pathErrorCheckOnly) {
+        return undefined
+      }
+      node = this.#children[regexpStr] = new Node()
+      if (name !== '') {
+        node.#varIndex = context.varIndex++
+      }
+    }
+    if (!pathErrorCheckOnly && name !== '') {
+      paramMap.push([name, node.#varIndex as number])
+    }
+    return node
+  }
+
+  #insertLiteral(token: string, pathErrorCheckOnly: boolean): Node | undefined {
+    let node = this.#children[token]
+    if (!node) {
+      if (
+        Object.keys(this.#children).some(
+          (k) =>
+            k.length > 1 && k !== ONLY_WILDCARD_REG_EXP_STR && k !== TAIL_WILDCARD_REG_EXP_STR
+        )
+      ) {
+        throw PATH_ERROR
+      }
+      if (pathErrorCheckOnly) {
+        return undefined
+      }
+      node = this.#children[token] = new Node()
+    }
+    return node
   }
 
   buildRegExpStr(): string {

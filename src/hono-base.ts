@@ -1,3 +1,5 @@
+//ff:type feature=core type=model
+//ff:what Hono base
 /**
  * @module
  * This module is the base module for the Hono object.
@@ -27,6 +29,18 @@ import type {
 } from './types'
 import { COMPOSED_HANDLER } from './utils/constants'
 import { getPath, getPathNoStrict, mergePath } from './utils/url'
+import type { GetPath } from './get_path.js'
+import type { HonoOptions } from './hono_options.js'
+import type { MountOptionHandler } from './mount_option_handler.js'
+import type { MountReplaceRequest } from './mount_replace_request.js'
+import type { MountOptions } from './mount_options.js'
+
+export type { GetPath } from './get_path.js'
+export type { HonoOptions } from './hono_options.js'
+export type { MountOptionHandler } from './mount_option_handler.js'
+export type { MountReplaceRequest } from './mount_replace_request.js'
+export type { MountOptions } from './mount_options.js'
+
 
 const notFoundHandler: NotFoundHandler = (c) => {
   return c.text('404 Not Found', 404)
@@ -41,59 +55,18 @@ const errorHandler: ErrorHandler = (err, c) => {
   return c.text('Internal Server Error', 500)
 }
 
-type GetPath<E extends Env> = (request: Request, options?: { env?: E['Bindings'] }) => string
-
-export type HonoOptions<E extends Env> = {
-  /**
-   * `strict` option specifies whether to distinguish whether the last path is a directory or not.
-   *
-   * @see {@link https://hono.dev/docs/api/hono#strict-mode}
-   *
-   * @default true
-   */
-  strict?: boolean
-  /**
-   * `router` option specifies which router to use.
-   *
-   * @see {@link https://hono.dev/docs/api/hono#router-option}
-   *
-   * @example
-   * ```ts
-   * const app = new Hono({ router: new RegExpRouter() })
-   * ```
-   */
-  router?: Router<[H, RouterRoute]>
-  /**
-   * `getPath` can handle the host header value.
-   *
-   * @see {@link https://hono.dev/docs/api/routing#routing-with-host-header-value}
-   *
-   * @example
-   * ```ts
-   * const app = new Hono({
-   *  getPath: (req) =>
-   *   '/' + req.headers.get('host') + req.url.replace(/^https?:\/\/[^/]+(\/[^?]*)/, '$1'),
-   * })
-   *
-   * app.get('/www1.example.com/hello', () => c.text('hello www1'))
-   *
-   * // A following request will match the route:
-   * // new Request('http://www1.example.com/hello', {
-   * //  headers: { host: 'www1.example.com' },
-   * // })
-   * ```
-   */
-  getPath?: GetPath<E>
+const _parseMountOptions = (options?: MountOptions): [MountReplaceRequest | undefined, MountOptionHandler | undefined] => {
+  if (!options) {
+    return [undefined, undefined]
+  }
+  if (typeof options === 'function') {
+    return [undefined, options]
+  }
+  const replaceRequest = options.replaceRequest === false
+    ? (request: Request) => request
+    : options.replaceRequest
+  return [replaceRequest, options.optionHandler]
 }
-
-type MountOptionHandler = (c: Context) => unknown
-type MountReplaceRequest = (originalRequest: Request) => Request
-type MountOptions =
-  | MountOptionHandler
-  | {
-      optionHandler?: MountOptionHandler
-      replaceRequest?: MountReplaceRequest | false
-    }
 
 class Hono<
   E extends Env = Env,
@@ -144,11 +117,7 @@ class Hono<
     this.on = (method: string | string[], path: string | string[], ...handlers: H[]) => {
       for (const p of [path].flat()) {
         this.#path = p
-        for (const m of [method].flat()) {
-          handlers.map((handler) => {
-            this.#addRoute(m.toUpperCase(), this.#path, handler)
-          })
-        }
+        this.#addRouteForMethods([method].flat(), handlers)
       }
       return this as any
     }
@@ -331,20 +300,8 @@ class Hono<
     options?: MountOptions
   ): Hono<E, S, BasePath, CurrentPath> {
     // handle options
-    let replaceRequest: MountReplaceRequest | undefined
-    let optionHandler: MountOptionHandler | undefined
-    if (options) {
-      if (typeof options === 'function') {
-        optionHandler = options
-      } else {
-        optionHandler = options.optionHandler
-        if (options.replaceRequest === false) {
-          replaceRequest = (request) => request
-        } else {
-          replaceRequest = options.replaceRequest
-        }
-      }
-    }
+    const [replaceReq, optionHandler] = _parseMountOptions(options)
+    let replaceRequest: MountReplaceRequest | undefined = replaceReq
 
     // prepare handlers for request
     const getOptions: (c: Context) => unknown[] = optionHandler
@@ -382,6 +339,14 @@ class Hono<
     return this
   }
 
+  #addRouteForMethods(methods: string[], handlers: H[]): void {
+    for (const m of methods) {
+      handlers.map((handler) => {
+        this.#addRoute(m.toUpperCase(), this.#path, handler)
+      })
+    }
+  }
+
   #addRoute(method: string, path: string, handler: H): void {
     method = method.toUpperCase()
     path = mergePath(this._basePath, path)
@@ -395,6 +360,26 @@ class Hono<
       return this.errorHandler(err, c)
     }
     throw err
+  }
+
+  #dispatchSingleHandler(matchResult: any, c: Context<E>): Response | Promise<Response> {
+    let res: ReturnType<H>
+    try {
+      res = matchResult[0][0][0][0](c, async () => {
+        c.res = await this.#notFoundHandler(c)
+      })
+    } catch (err) {
+      return this.#handleError(err, c)
+    }
+
+    return res instanceof Promise
+      ? res
+          .then(
+            (resolved: Response | undefined) =>
+              resolved || (c.finalized ? c.res : this.#notFoundHandler(c))
+          )
+          .catch((err: Error) => this.#handleError(err, c))
+      : (res ?? this.#notFoundHandler(c))
   }
 
   #dispatch(
@@ -422,23 +407,7 @@ class Hono<
 
     // Do not `compose` if it has only one handler
     if (matchResult[0].length === 1) {
-      let res: ReturnType<H>
-      try {
-        res = matchResult[0][0][0][0](c, async () => {
-          c.res = await this.#notFoundHandler(c)
-        })
-      } catch (err) {
-        return this.#handleError(err, c)
-      }
-
-      return res instanceof Promise
-        ? res
-            .then(
-              (resolved: Response | undefined) =>
-                resolved || (c.finalized ? c.res : this.#notFoundHandler(c))
-            )
-            .catch((err: Error) => this.#handleError(err, c))
-        : (res ?? this.#notFoundHandler(c))
+      return this.#dispatchSingleHandler(matchResult, c)
     }
 
     const composed = compose(matchResult[0], this.errorHandler, this.#notFoundHandler)

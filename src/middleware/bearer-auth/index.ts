@@ -1,3 +1,5 @@
+//ff:type feature=middleware type=handler
+//ff:what Index
 /**
  * @module
  * Bearer Auth Middleware for Hono.
@@ -8,17 +10,16 @@ import { HTTPException } from '../../http-exception'
 import type { MiddlewareHandler } from '../../types'
 import { timingSafeEqual } from '../../utils/buffer'
 import type { ContentfulStatusCode } from '../../utils/http-status'
+import type { MessageFunction } from './message_function.js'
+import type { CustomizedErrorResponseOptions } from './customized_error_response_options.js'
+
+export type { MessageFunction } from './message_function.js'
+export type { CustomizedErrorResponseOptions } from './customized_error_response_options.js'
+
 
 const TOKEN_STRINGS = '[A-Za-z0-9._~+/-]+=*'
 const PREFIX = 'Bearer'
 const HEADER = 'Authorization'
-
-type MessageFunction = (c: Context) => string | object | Promise<string | object>
-type CustomizedErrorResponseOptions = {
-  wwwAuthenticateHeader?: string | object | MessageFunction
-  message?: string | object | MessageFunction
-}
-
 type BearerAuthOptions =
   | {
       token: string | string[]

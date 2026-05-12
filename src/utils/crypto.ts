@@ -1,14 +1,14 @@
+//ff:type feature=utils type=model
+//ff:what Crypto
 /**
  * @module
  * Crypto utility.
  */
 
 import type { JSONValue } from './types'
+import type { Algorithm } from './algorithm.js'
 
-type Algorithm = {
-  name: string
-  alias: string
-}
+export type { Algorithm } from './algorithm.js'
 
 type Data = string | boolean | number | JSONValue | ArrayBufferView | ArrayBuffer
 

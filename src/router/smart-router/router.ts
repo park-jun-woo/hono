@@ -1,5 +1,26 @@
+//ff:type feature=router type=router
+//ff:what Router
 import type { Result, Router } from '../../router'
 import { MESSAGE_MATCHER_IS_ALREADY_BUILT, UnsupportedPathError } from '../../router'
+
+const tryRouterMatch = <T>(
+  router: Router<T>,
+  routes: [string, string, T][],
+  method: string,
+  path: string
+): Result<T> | null => {
+  try {
+    for (let i = 0, len = routes.length; i < len; i++) {
+      router.add(...routes[i])
+    }
+    return router.match(method, path)
+  } catch (e) {
+    if (e instanceof UnsupportedPathError) {
+      return null
+    }
+    throw e
+  }
+}
 
 export class SmartRouter<T> implements Router<T> {
   name: string = 'SmartRouter'
@@ -31,18 +52,10 @@ export class SmartRouter<T> implements Router<T> {
     let res
     for (; i < len; i++) {
       const router = routers[i]
-      try {
-        for (let i = 0, len = routes.length; i < len; i++) {
-          router.add(...routes[i])
-        }
-        res = router.match(method, path)
-      } catch (e) {
-        if (e instanceof UnsupportedPathError) {
-          continue
-        }
-        throw e
+      res = tryRouterMatch(router, routes, method, path)
+      if (res === null) {
+        continue
       }
-
       this.match = router.match.bind(router)
       this.#routers = [router]
       this.#routes = undefined

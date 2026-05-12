@@ -1,9 +1,9 @@
-/**
- * @module
- * URL utility.
- */
+//ff:type feature=utils type=model
+//ff:what Url
 
-export type Pattern = readonly [string, string, RegExp | true] | '*'
+import type { Pattern } from './pattern.js'
+
+export type { Pattern } from './pattern.js'
 
 export const splitPath = (path: string): string[] => {
   const paths = path.split('/')

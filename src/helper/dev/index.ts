@@ -1,3 +1,5 @@
+//ff:type feature=helper type=model
+//ff:what Index
 /**
  * @module
  * Dev Helper for Hono.
@@ -7,11 +9,10 @@ import type { Hono } from '../../hono'
 import type { Env, RouterRoute } from '../../types'
 import { getColorEnabled } from '../../utils/color'
 import { findTargetHandler, isMiddleware } from '../../utils/handler'
+import type { ShowRoutesOptions } from './show_routes_options.js'
 
-interface ShowRoutesOptions {
-  verbose?: boolean
-  colorize?: boolean
-}
+export type { ShowRoutesOptions } from './show_routes_options.js'
+
 
 interface RouteData {
   path: string

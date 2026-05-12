@@ -1,18 +1,14 @@
+//ff:type feature=helper type=model
+//ff:what Accepts
 import type { Context } from '../../context'
 import { parseAccept } from '../../utils/accept'
 import type { AcceptHeader } from '../../utils/headers'
+import type { Accept } from './accept.js'
+import type { acceptsConfig } from './accepts_config.js'
 
-export interface Accept {
-  type: string
-  params: Record<string, string>
-  q: number
-}
+export type { Accept } from './accept.js'
+export type { acceptsConfig } from './accepts_config.js'
 
-export interface acceptsConfig {
-  header: AcceptHeader
-  supports: string[]
-  default: string
-}
 
 export interface acceptsOptions extends acceptsConfig {
   match?: (accepts: Accept[], config: acceptsConfig) => string
