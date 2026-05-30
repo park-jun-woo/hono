@@ -103,6 +103,33 @@ This fork restructures hono to comply with [filefunc](https://github.com/park-ju
 | vitest failed | 4 | 4 (pre-existing) |
 | vitest skipped | 33 | 33 |
 
+### Read-length distribution — the actual goal
+
+File count and "0 violations" are a *proxy*. The real goal of filefunc is **agent read-precision**: when an agent reads a concept, it should read only that concept, bounded in length. So the metric that matters is **lines per file**, not the violation count. Measured over `src/**/*.ts` (excluding tests):
+
+| Lines per file | Original | Refactored |
+|---|---|---|
+| median | 60.0 | **17.5** (−71%) |
+| mean | 134.3 | 48.3 (−64%) |
+| p90 | 305 | 119 (−61%) |
+| max | 2,778 | 1,051 (−62%) |
+| files ≤ 20 lines | 48 (26%) | **340 (54%)** |
+
+When an agent opens one concept, it now pulls in ~18 lines instead of ~60; the p90 worst case dropped from ~305 to ~120 lines. Individual **function length is unchanged** (median 11 → 12 lines) — functions were *relocated*, not rewritten. What shrank is the extraneous code dragged along when reading a single concept.
+
+### Honest caveat: the multi-concept tail
+
+The "one concept per file" invariant is met for the **vast majority but not universally**:
+
+| Functions per file | Original | Refactored |
+|---|---|---|
+| files with ≤ 1 function-like binding | 130 (70%) | **566 (90%)** |
+| files with > 1 | 56 (30%) | 60 (9.6%) |
+
+90% of files now hold ≤ 1 function (up from 70%). But **60 files (9.6%) still co-habit 2+ functions, and these are precisely the long ones** — median 151 lines (e.g. `src/utils/url.ts` packs 14 functions in 319 lines). The `const`-arrow technique cleanly isolates the easy cases (types, single helpers) but leaves a tail of utility/middleware hubs un-split, where most of the remaining read-length risk concentrates. The metric (file count / violations) passes; the *purpose* is ~90% met. Reporting what is **not** yet done is part of the verification.
+
+*(Line counts are exact via find/wc/awk. Function-length figures are heuristic, computed by brace-depth scanning.)*
+
 ### Rules applied
 
 | Rule | Description | Action taken |
